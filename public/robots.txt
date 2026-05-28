@@ -1,0 +1,76 @@
+# ============================================================
+# robots.txt — Infant John A Portfolio
+# https://infantjohna.com/robots.txt
+# Last updated: 2026-05-28
+# ============================================================
+
+# ── Default: allow all well-behaved crawlers ─────────────────
+User-agent: *
+Allow: /
+
+# Block admin / build internals that should never be indexed
+Disallow: /_next/
+Disallow: /api/
+
+# ── Google ───────────────────────────────────────────────────
+User-agent: Googlebot
+Allow: /
+Disallow: /_next/
+Disallow: /api/
+
+# Google Image Bot — allow full access for portfolio SEO
+User-agent: Googlebot-Image
+Allow: /
+
+# ── Bing ─────────────────────────────────────────────────────
+User-agent: Bingbot
+Allow: /
+Disallow: /_next/
+Disallow: /api/
+
+# ── Apple ────────────────────────────────────────────────────
+User-agent: Applebot
+Allow: /
+
+# ── Pinterest (drives referral traffic for photographers) ────
+User-agent: Pinterest
+Allow: /
+
+# ── AI Training Crawlers — blocked ──────────────────────────
+# These bots harvest content for AI model training.
+# Blocking them protects John's original creative work.
+
+# OpenAI
+User-agent: GPTBot
+Disallow: /
+
+# OpenAI content browser
+User-agent: ChatGPT-User
+Disallow: /
+
+# Common Crawl (used by many LLM training pipelines)
+User-agent: CCBot
+Disallow: /
+
+# Anthropic
+User-agent: ClaudeBot
+Disallow: /
+
+# Amazon Alexa
+User-agent: ia_archiver
+Disallow: /
+
+# Bytedance / TikTok AI
+User-agent: Bytespider
+Disallow: /
+
+# Meta AI
+User-agent: FacebookBot
+Disallow: /
+
+# Cohere
+User-agent: cohere-ai
+Disallow: /
+
+# ── Sitemap ──────────────────────────────────────────────────
+Sitemap: https://infantjohna.com/sitemap.xml

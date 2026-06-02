@@ -4,7 +4,6 @@ import "./globals.css";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import ScrollProgress from "./components/ScrollProgress";
-import PageTransition from "./components/PageTransition";
 import NoiseOverlay from "./components/NoiseOverlay";
 
 const cinzel = Cinzel({
@@ -51,7 +50,7 @@ export default function RootLayout({
         <ScrollProgress />
         <Navigation />
         <main className="flex-1">
-          <PageTransition>{children}</PageTransition>
+          {children}
         </main>
         <Footer />
       </body>

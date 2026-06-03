@@ -8,6 +8,15 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+/** Returns false when any required Cloudinary env var is missing. */
+function isCloudinaryConfigured(): boolean {
+  return Boolean(
+    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET,
+  );
+}
+
 // Folder name → display label: underscores become spaces
 function folderToLabel(folder: string): string {
   return folder.replace(/_/g, ' ');

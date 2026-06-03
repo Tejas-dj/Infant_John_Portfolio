@@ -2,55 +2,58 @@
 
 import { useRef, useEffect, useState } from "react";
 import { gsap } from "gsap";
-import Image from "next/image";
+import { CldImage } from "next-cloudinary";
 import Lightbox from "./Lightbox";
 
-import { PHOTOS, COUNT } from "../data/photography";
+import type { Photo } from "../data/photography";
 
 // ── Layout helpers ────────────────────────────────────────────
-function hexLayout(size: number, gap: number) {
+function computeLayout(vw: number) {
+  const cols = vw < 600 ? 5 : vw < 1024 ? 10 : 15;
+  const sx   = vw / (cols + 0.5);                        // step that exactly fills viewport width
+  const gap  = Math.max(4, Math.round(sx * 0.134));      // ~13% of step as gap
+  const size = Math.round(sx - gap);
+  return { size, gap, cols };
+}
+
+function hexLayout(size: number, gap: number, count: number, cols: number) {
   const sx = size + gap;
   const sy = sx * 0.8660254; // √3/2 — true hexagonal row spacing
-  const W = COLS * sx + sx / 2; // extra half-step for staggered rows
-  const H = Math.ceil(COUNT / COLS) * sy + size;
-  const pos = Array.from({ length: COUNT }, (_, i) => ({
-    x: (i % COLS) * sx + (Math.floor(i / COLS) % 2 === 1 ? sx / 2 : 0),
-    y: Math.floor(i / COLS) * sy,
+  const W  = cols * sx + sx / 2;
+  const H  = Math.ceil(count / cols) * sy + size;
+  const pos = Array.from({ length: count }, (_, i) => ({
+    x: (i % cols) * sx + (Math.floor(i / cols) % 2 === 1 ? sx / 2 : 0),
+    y: Math.floor(i / cols) * sy,
   }));
   return { W, H, pos };
 }
 
 // ── Component ─────────────────────────────────────────────────
-const COLS = 15;
-const ICON_D = 90;   // desktop icon px
-const ICON_M = 62;   // mobile icon px
-const GAP_D = 14;
-const GAP_M = 9;
 const MIN_ZOOM = 0.3;
 const MAX_ZOOM = 5;
-const G_RADIUS = 210; // gravity influence radius (screen px at zoom 1)
+const G_RADIUS = 210;
 
-export default function HoneycombGrid() {
-  const wrapRef = useRef<HTMLDivElement>(null);
+export default function HoneycombGrid({ photos }: { photos: Photo[] }) {
+  const count = photos.length;
+
+  const wrapRef  = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
-  const dotRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const dotRefs  = useRef<(HTMLDivElement | null)[]>([]);
 
-  // All live interaction state in a single ref → zero re-renders from physics
   const lv = useRef({
-    z: 1, px: 0, py: 0,           // zoom + pan
-    mx: 0, my: 0, inGrid: false,   // mouse
+    z: 1, px: 0, py: 0,
+    mx: 0, my: 0, inGrid: false,
     drag: false,
-    dsx: 0, dsy: 0, dpx: 0, dpy: 0, // drag start
-    td: 0,                           // pinch start distance
-    size: ICON_D, gap: GAP_D,
+    dsx: 0, dsy: 0, dpx: 0, dpy: 0,
+    td: 0,
+    size: 90, gap: 14, cols: 15,
   });
 
-  // React state only for things that drive UI re-renders
-  const [cfg, setCfg] = useState({ size: ICON_D, gap: GAP_D });
+  const [cfg, setCfg] = useState({ size: 90, gap: 14, cols: 15 });
   const [mounted, setMounted] = useState(false);
   const [sel, setSel] = useState<number | null>(null);
 
-  const L = hexLayout(cfg.size, cfg.gap);
+  const L = hexLayout(cfg.size, cfg.gap, count, cfg.cols);
 
   // ── DOM helpers ──────────────────────────────────────────────
   function applyTransform() {
@@ -64,17 +67,17 @@ export default function HoneycombGrid() {
   function centerGrid() {
     const c = wrapRef.current;
     if (!c) return;
-    const { W, H } = hexLayout(lv.current.size, lv.current.gap);
-    lv.current.px = (c.clientWidth - W) / 2;
+    const { size, gap, cols } = lv.current;
+    const { H } = hexLayout(size, gap, count, cols);
+    lv.current.px = 0; // grid fills full width — no horizontal offset needed
     lv.current.py = (c.clientHeight - H) / 2;
     applyTransform();
   }
 
   function updateMagnetic() {
-    const { z, px, py, mx, my, inGrid, size, gap } = lv.current;
-    const { pos } = hexLayout(size, gap);
+    const { z, px, py, mx, my, inGrid, size, gap, cols } = lv.current;
+    const { pos } = hexLayout(size, gap, count, cols);
     const half = size / 2;
-    // Radius grows with sqrt(zoom) so the effect feels consistent at all zoom levels
     const radius = G_RADIUS * Math.sqrt(z);
 
     pos.forEach((p, i) => {
@@ -82,12 +85,10 @@ export default function HoneycombGrid() {
       if (!el) return;
       let target = 1;
       if (inGrid) {
-        // Convert icon centre → screen coordinates
         const sx = (p.x + half) * z + px;
         const sy = (p.y + half) * z + py;
         const dist = Math.hypot(mx - sx, my - sy);
-        const inf = Math.max(0, 1 - dist / radius);
-        // min=0.88 at inf=0, max=2.4 at inf=1, power curve for nice falloff
+        const inf  = Math.max(0, 1 - dist / radius);
         target = 0.88 + 1.52 * Math.pow(inf, 1.7);
       }
       gsap.to(el, {
@@ -99,27 +100,26 @@ export default function HoneycombGrid() {
     });
   }
 
-  // ── Mount: detect device, register all events ────────────────
+  // ── Mount ────────────────────────────────────────────────────
   useEffect(() => {
-    const isMob = window.innerWidth < 768;
-    const size = isMob ? ICON_M : ICON_D;
-    const gap = isMob ? GAP_M : GAP_D;
-    lv.current.size = size;
-    lv.current.gap = gap;
-    setCfg({ size, gap }); // triggers re-render so circles have correct sizes
+    const layout = computeLayout(window.innerWidth);
+    lv.current.size = layout.size;
+    lv.current.gap  = layout.gap;
+    lv.current.cols = layout.cols;
+    setCfg(layout);
     setMounted(true);
   }, []);
 
-  // Re-center whenever cfg changes (mount + resize)
   useEffect(() => {
     if (!mounted) return;
     lv.current.size = cfg.size;
-    lv.current.gap = cfg.gap;
+    lv.current.gap  = cfg.gap;
+    lv.current.cols = cfg.cols;
     centerGrid();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cfg, mounted]);
 
-  // Event listeners – only attached once, read mutable state via ref
+  // ── Event listeners ──────────────────────────────────────────
   useEffect(() => {
     if (!mounted) return;
     const c = wrapRef.current;
@@ -139,22 +139,20 @@ export default function HoneycombGrid() {
     };
 
     const onResize = () => {
-      const isMob = window.innerWidth < 768;
-      const size = isMob ? ICON_M : ICON_D;
-      const gap = isMob ? GAP_M : GAP_D;
-      lv.current.z = 1;
-      lv.current.size = size;
-      lv.current.gap = gap;
-      setCfg({ size, gap });
+      const layout = computeLayout(window.innerWidth);
+      lv.current.z    = 1;
+      lv.current.size = layout.size;
+      lv.current.gap  = layout.gap;
+      lv.current.cols = layout.cols;
+      setCfg(layout);
     };
 
-    // Keyboard lightbox navigation
     const onKey = (e: KeyboardEvent) => {
       setSel(cur => {
         if (cur === null) return null;
-        if (e.key === "ArrowLeft") return (cur - 1 + COUNT) % COUNT;
-        if (e.key === "ArrowRight") return (cur + 1) % COUNT;
-        if (e.key === "Escape") return null;
+        if (e.key === "ArrowLeft")  return (cur - 1 + count) % count;
+        if (e.key === "ArrowRight") return (cur + 1) % count;
+        if (e.key === "Escape")     return null;
         return cur;
       });
     };
@@ -173,17 +171,17 @@ export default function HoneycombGrid() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
 
-  const prev = () => setSel(i => i !== null ? (i - 1 + COUNT) % COUNT : null);
-  const next = () => setSel(i => i !== null ? (i + 1) % COUNT : null);
+  const prev = () => setSel(i => i !== null ? (i - 1 + count) % count : null);
+  const next = () => setSel(i => i !== null ? (i + 1) % count : null);
 
-  // ── Loading state (SSR + before mount) ──────────────────────
+  // ── Loading skeleton ─────────────────────────────────────────
   if (!mounted) {
     return (
       <div
         className="relative w-full h-full overflow-hidden bg-canvas flex items-center justify-center"
         style={{
           maskImage: "radial-gradient(ellipse at center, black 55%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse at center, black 55%, transparent 100%)"
+          WebkitMaskImage: "radial-gradient(ellipse at center, black 55%, transparent 100%)",
         }}
       >
         <div className="flex flex-wrap justify-center gap-3 opacity-25 max-w-lg">
@@ -195,7 +193,7 @@ export default function HoneycombGrid() {
     );
   }
 
-  // ── Render ────────────────────────────────────────────────────
+  // ── Render ───────────────────────────────────────────────────
   return (
     <>
       <div
@@ -203,16 +201,15 @@ export default function HoneycombGrid() {
         className="relative w-full h-full overflow-hidden bg-canvas select-none"
         style={{
           maskImage: "radial-gradient(ellipse at center, black 55%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse at center, black 55%, transparent 100%)"
+          WebkitMaskImage: "radial-gradient(ellipse at center, black 55%, transparent 100%)",
         }}
       >
-        {/* ── World: absolute, positioned by JS transform ── */}
         <div
           ref={worldRef}
           className="absolute top-0 left-0"
           style={{ width: L.W, height: L.H }}
         >
-          {PHOTOS.map((photo, i) => (
+          {photos.map((photo, i) => (
             <div
               key={photo.id}
               ref={el => { dotRefs.current[i] = el; }}
@@ -230,26 +227,28 @@ export default function HoneycombGrid() {
                 boxShadow: "0 4px 18px rgba(44,44,44,0.1), inset 0 0 0 1.5px rgba(217,176,97,0.18)",
               }}
             >
-              <Image
+              <CldImage
                 src={photo.src}
                 alt={`Photo ${i + 1}`}
                 fill
-                sizes="90px"
+                sizes="(max-width: 600px) 18vw, (max-width: 1024px) 10vw, 7vw"
+                format="auto"
+                quality="auto"
+                crop="fill"
+                gravity="auto"
                 className="object-cover opacity-0 transition-opacity duration-1000"
-                onLoad={(e) => e.currentTarget.classList.remove('opacity-0')}
+                onLoad={(e) => (e.currentTarget as HTMLImageElement).classList.remove("opacity-0")}
               />
             </div>
           ))}
         </div>
 
-        {/* Hint bar */}
         <p className="absolute bottom-5 inset-x-0 text-center font-body text-[10px] text-charcoal/25 tracking-[0.22em] uppercase pointer-events-none">
           Click on an image to open
         </p>
       </div>
 
-      {/* ── Lightbox ─────────────────────────────────────────── */}
-      <Lightbox images={PHOTOS} sel={sel} setSel={setSel} />
+      <Lightbox images={photos} sel={sel} setSel={setSel} />
     </>
   );
 }

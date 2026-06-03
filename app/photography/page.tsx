@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import HoneycombGrid from "../components/HoneycombGrid";
 import FilterableGallery from "../components/FilterableGallery";
+import { getAllPhotos } from "../lib/cloudinary";
+
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Photography",
@@ -20,14 +23,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PhotographyPage() {
+export default async function PhotographyPage() {
+  const photos = await getAllPhotos();
+
   return (
     <>
       {/* ── Hero: Apple Watch Honeycomb Grid ── */}
       <section className="relative h-screen min-h-[700px] w-full overflow-hidden bg-canvas flex flex-col items-center justify-center pt-[72px]">
         {/* Honeycomb Background */}
         <div className="absolute inset-0 w-full h-full">
-          <HoneycombGrid />
+          <HoneycombGrid photos={photos} />
         </div>
 
         {/* Floating Header */}
@@ -44,7 +49,7 @@ export default function PhotographyPage() {
       </section>
 
       {/* ── Filterable Gallery ── */}
-      <FilterableGallery />
+      <FilterableGallery photos={photos} />
     </>
   );
 }

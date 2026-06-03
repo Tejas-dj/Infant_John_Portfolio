@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import HomeClient from "./components/HomeClient";
+import { getHomepagePhotos } from "./lib/cloudinary";
+
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Infant John A — Videographer & Photographer",
@@ -16,6 +19,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Home() {
-  return <HomeClient />;
+export default async function Home() {
+  const homepagePhotos = await getHomepagePhotos();
+  return <HomeClient homepagePhotos={homepagePhotos} />;
 }

@@ -2,13 +2,12 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
+import { CldImage } from "next-cloudinary";
 import Lightbox from "./Lightbox";
 
-import { CATEGORIES, PHOTOS } from "../data/photography";
+import type { Photo } from "../data/photography";
 
-// Extracted GalleryItem to handle individual parallax and image loading state
-function GalleryItem({ item, index, onClick }: { item: any, index: number, onClick: () => void }) {
+function GalleryItem({ item, onClick }: { item: Photo; onClick: () => void }) {
   const [loaded, setLoaded] = useState(false);
 
   return (
@@ -21,15 +20,25 @@ function GalleryItem({ item, index, onClick }: { item: any, index: number, onCli
       style={{ backgroundColor: item.tint }}
       onClick={onClick}
       className={`break-inside-avoid mb-2 md:mb-4 border border-warm-gray/30 ${
-        item.orientation === "landscape" ? "aspect-[4/3]" : item.orientation === "portrait" ? "aspect-[2/3]" : "aspect-square"
+        item.orientation === "landscape"
+          ? "aspect-[4/3]"
+          : item.orientation === "portrait"
+          ? "aspect-[2/3]"
+          : "aspect-square"
       } relative overflow-hidden group hover:border-gold/45 hover:shadow-sm transition-colors duration-300 cursor-pointer`}
     >
-      <Image
+      <CldImage
         src={item.src}
         alt={item.filename}
         fill
         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 15vw"
-        className={`object-cover transition-opacity duration-1000 ease-out ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        format="auto"
+        quality="auto"
+        crop="fill"
+        gravity="auto"
+        className={`object-cover transition-opacity duration-1000 ease-out ${
+          loaded ? "opacity-100" : "opacity-0"
+        }`}
         onLoad={() => setLoaded(true)}
       />
       {!loaded && (
@@ -45,13 +54,14 @@ function GalleryItem({ item, index, onClick }: { item: any, index: number, onCli
   );
 }
 
-export default function FilterableGallery() {
+export default function FilterableGallery({ photos }: { photos: Photo[] }) {
   const [active, setActive] = useState("All");
   const [sel, setSel] = useState<number | null>(null);
 
-  const visible = active === "All"
-    ? PHOTOS
-    : PHOTOS.filter(item => item.category === active);
+  const visible =
+    active === "All" ? photos : photos.filter((item) => item.category === active);
+
+  const displayCategories = ["All", ...Array.from(new Set(photos.map((p) => p.category)))];
 
   return (
     <section className="py-20 w-full overflow-hidden">
@@ -59,7 +69,7 @@ export default function FilterableGallery() {
         <h2 className="font-heading text-2xl text-charcoal font-bold mb-6">Browse by Category</h2>
 
         <div className="flex flex-wrap gap-3">
-          {CATEGORIES.map(cat => (
+          {displayCategories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActive(cat)}
@@ -80,11 +90,10 @@ export default function FilterableGallery() {
         <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 2xl:columns-7 gap-2 md:gap-4">
           <AnimatePresence mode="popLayout">
             {visible.map((item, index) => (
-              <GalleryItem 
-                key={item.id} 
-                item={item} 
-                index={index} 
-                onClick={() => setSel(index)} 
+              <GalleryItem
+                key={item.id}
+                item={item}
+                onClick={() => setSel(index)}
               />
             ))}
           </AnimatePresence>

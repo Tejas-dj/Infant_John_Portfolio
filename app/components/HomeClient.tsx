@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { CldImage } from "next-cloudinary";
 import HomeHero from "./HomeHero";
 import MagneticButton from "./MagneticButton";
 
@@ -23,15 +24,15 @@ const whyWork = [
   },
 ];
 
-const curatedItems = [
-  { id: 1, isVideo: false, label: "Portrait", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80" },
-  { id: 2, isVideo: false, label: "Automotive", img: "https://images.unsplash.com/photo-1603386329225-868f9b1ee6c9?auto=format&fit=crop&q=80" },
-  { id: 3, isVideo: true, label: "Brand Reel", img: "https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&q=80" },
-  { id: 4, isVideo: false, label: "Event", img: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80" },
-  { id: 5, isVideo: false, label: "Commercial", img: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&q=80" },
-  { id: 6, isVideo: true, label: "Cinematic", img: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80" },
-  { id: 7, isVideo: false, label: "Lifestyle", img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80" },
-  { id: 8, isVideo: false, label: "Product", img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80" },
+const curatedMeta = [
+  { id: 1, isVideo: false, label: "Portrait" },
+  { id: 2, isVideo: false, label: "Automotive" },
+  { id: 3, isVideo: true,  label: "Brand Reel" },
+  { id: 4, isVideo: false, label: "Event" },
+  { id: 5, isVideo: false, label: "Commercial" },
+  { id: 6, isVideo: true,  label: "Cinematic" },
+  { id: 7, isVideo: false, label: "Lifestyle" },
+  { id: 8, isVideo: false, label: "Product" },
 ];
 
 function PlayIcon() {
@@ -42,7 +43,11 @@ function PlayIcon() {
   );
 }
 
-export default function HomeClient() {
+export default function HomeClient({ homepagePhotos }: { homepagePhotos: string[] }) {
+  const curatedItems = curatedMeta.map((item, i) => ({
+    ...item,
+    publicId: homepagePhotos[i] ?? null,
+  }));
   const containerRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
   const galleryTrackRef = useRef<HTMLDivElement>(null);
@@ -100,10 +105,16 @@ export default function HomeClient() {
 
             {/* Image (No Transition) */}
             <div className="relative aspect-[4/5] bg-charcoal/5 border border-current/10 overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1554046920-90dcac0536d1?auto=format&fit=crop&q=80"
-                alt="John"
-                className="absolute inset-0 w-full h-full object-cover origin-top"
+              <CldImage
+                src="Headshot_John_Infant_A_aftv5v"
+                alt="Infant John A — Videographer & Photographer"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                format="auto"
+                quality="auto"
+                crop="fill"
+                gravity="face"
+                className="object-cover object-top"
               />
             </div>
 
@@ -164,7 +175,19 @@ export default function HomeClient() {
                   className="relative h-full aspect-[3/4] flex-none overflow-hidden group cursor-pointer transition-all duration-700"
                   style={{ opacity: isOtherHovered ? 0.3 : 1 }}
                 >
-                  <img src={item.img} alt={item.label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                  {item.publicId && (
+                    <CldImage
+                      src={item.publicId}
+                      alt={item.label}
+                      fill
+                      sizes="(max-width: 768px) 40vw, 25vw"
+                      format="auto"
+                      quality="auto"
+                      crop="fill"
+                      gravity="auto"
+                      className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                    />
+                  )}
 
                   {/* Fake Video Preview on Hover for Video Items */}
                   {item.isVideo && (

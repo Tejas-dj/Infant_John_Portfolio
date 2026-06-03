@@ -180,8 +180,8 @@ export default function HoneycombGrid({ photos }: { photos: Photo[] }) {
       <div
         className="relative w-full h-full overflow-hidden bg-canvas flex items-center justify-center"
         style={{
-          maskImage: "radial-gradient(ellipse at center, black 55%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse at center, black 55%, transparent 100%)",
+          maskImage: "radial-gradient(ellipse at center, black 60%, transparent 95%)",
+          WebkitMaskImage: "radial-gradient(ellipse at center, black 60%, transparent 95%)",
         }}
       >
         <div className="flex flex-wrap justify-center gap-3 opacity-25 max-w-lg">
@@ -200,8 +200,8 @@ export default function HoneycombGrid({ photos }: { photos: Photo[] }) {
         ref={wrapRef}
         className="relative w-full h-full overflow-hidden bg-canvas select-none"
         style={{
-          maskImage: "radial-gradient(ellipse at center, black 55%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse at center, black 55%, transparent 100%)",
+          maskImage: "radial-gradient(ellipse at center, black 60%, transparent 95%)",
+          WebkitMaskImage: "radial-gradient(ellipse at center, black 60%, transparent 95%)",
         }}
       >
         <div
@@ -231,12 +231,13 @@ export default function HoneycombGrid({ photos }: { photos: Photo[] }) {
                 src={photo.src}
                 alt={`Photo ${i + 1}`}
                 fill
-                sizes="(max-width: 600px) 18vw, (max-width: 1024px) 10vw, 7vw"
+                sizes="(max-width: 600px) 90px, (max-width: 1024px) 120px, 180px"
                 format="auto"
-                quality="auto"
+                quality={50}
                 crop="fill"
                 gravity="auto"
-                className="object-cover opacity-0 transition-opacity duration-1000"
+                loading={i < 45 ? "eager" : "lazy"}
+                className="object-cover opacity-0 transition-opacity duration-500"
                 onLoad={(e) => (e.currentTarget as HTMLImageElement).classList.remove("opacity-0")}
               />
             </div>

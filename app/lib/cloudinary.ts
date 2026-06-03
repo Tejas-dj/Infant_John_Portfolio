@@ -60,8 +60,27 @@ async function fetchFolder(folder: string): Promise<Omit<Photo, 'id'>[]> {
 
 export const getAllPhotos = unstable_cache(
   async (): Promise<Photo[]> => {
+    if (!isCloudinaryConfigured()) return [];
     const results = await Promise.all(FOLDERS.map(fetchFolder));
-    return results.flat().map((photo, i) => ({ ...photo, id: i + 1 }));
+    const flat = results.flat();
+    // Shuffle so categories are mixed in the honeycomb grid
+    for (let i = flat.length - 1; i > 0; i--) {
+      const j = (i * 2654435761) % (i + 1);
+      [flat[i], flat[j]] = [flat[j], flat[i]];
+    }
+    // Bias portraits toward the middle of the array (center of grid)
+    const portraits = flat.filter(p => p.category === 'Potraits');
+    const others = flat.filter(p => p.category !== 'Potraits');
+    const total = flat.length;
+    const mid = Math.floor(total / 2);
+    const spread = Math.floor(total * 0.3);
+    const merged: typeof flat = [...others];
+    for (let i = 0; i < portraits.length; i++) {
+      const offset = Math.floor((i * 2654435761 >>> 0) % (spread * 2)) - spread;
+      const pos = Math.max(0, Math.min(merged.length, mid + offset));
+      merged.splice(pos, 0, portraits[i]);
+    }
+    return merged.map((photo, i) => ({ ...photo, id: i + 1 }));
   },
   ['cloudinary-all-photos-v2'],  // bumped to invalidate cache that pre-dates width/height fields
   { revalidate: 3600 }
@@ -70,6 +89,7 @@ export const getAllPhotos = unstable_cache(
 // Returns Homepage folder public IDs sorted by the sequence number in the display name
 export const getHomepagePhotos = unstable_cache(
   async (): Promise<string[]> => {
+    if (!isCloudinaryConfigured()) return [];
     const result = await cloudinary.api.resources_by_asset_folder('Homepage', {
       resource_type: 'image',
       max_results: 50,

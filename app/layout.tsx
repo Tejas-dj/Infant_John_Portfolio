@@ -5,6 +5,8 @@ import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import ScrollProgress from "./components/ScrollProgress";
 import NoiseOverlay from "./components/NoiseOverlay";
+import LightboxPreloader from "./components/LightboxPreloader";
+import { getAllPhotos } from "./lib/cloudinary";
 
 const cinzel = Cinzel({
   variable: "--font-cinzel",
@@ -38,11 +40,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const photos = await getAllPhotos();
+
   return (
     <html lang="en" className={`${cinzel.variable} ${inter.variable}`}>
       <body className="min-h-screen flex flex-col bg-canvas text-charcoal">
@@ -53,6 +57,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <LightboxPreloader srcs={photos.map((p) => p.src)} />
       </body>
     </html>
   );

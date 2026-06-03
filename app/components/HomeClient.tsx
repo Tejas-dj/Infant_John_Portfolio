@@ -24,15 +24,16 @@ const whyWork = [
   },
 ];
 
+// Labels ordered to match CURATED_ORDER: 4,2,5,1,8,3,6,7
 const curatedMeta = [
-  { id: 1, isVideo: false, label: "Portrait" },
-  { id: 2, isVideo: false, label: "Automotive" },
-  { id: 3, isVideo: true,  label: "Brand Reel" },
-  { id: 4, isVideo: false, label: "Event" },
-  { id: 5, isVideo: false, label: "Commercial" },
-  { id: 6, isVideo: true,  label: "Cinematic" },
-  { id: 7, isVideo: false, label: "Lifestyle" },
-  { id: 8, isVideo: false, label: "Product" },
+  { id: 1, isVideo: false, label: "Model Shoot" },
+  { id: 2, isVideo: false, label: "Baby Shower" },
+  { id: 3, isVideo: false, label: "DJ" },
+  { id: 4, isVideo: false, label: "Bike Shoot (Ducati Panigale V4)" },
+  { id: 5, isVideo: false, label: "Couple Nature Shoot" },
+  { id: 6, isVideo: false, label: "Food & Beverages" },
+  { id: 7, isVideo: false, label: "Pool Party Shoot" },
+  { id: 8, isVideo: false, label: "Marriage Shoot" },
 ];
 
 function PlayIcon() {
@@ -43,10 +44,17 @@ function PlayIcon() {
   );
 }
 
+// Desired photo order (1-indexed positions from Cloudinary homepage folder)
+const CURATED_ORDER = [4, 2, 5, 1, 8, 3, 6, 7];
+
 export default function HomeClient({ homepagePhotos }: { homepagePhotos: string[] }) {
+  // Exclude the headshot so it only appears in the About section
+  const galleryPhotos = homepagePhotos.filter(
+    (id) => !id.toLowerCase().includes('headshot_john_infant_a')
+  );
   const curatedItems = curatedMeta.map((item, i) => ({
     ...item,
-    publicId: homepagePhotos[i] ?? null,
+    publicId: galleryPhotos[CURATED_ORDER[i] - 1] ?? null,
   }));
   const containerRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);

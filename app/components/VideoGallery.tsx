@@ -3,7 +3,6 @@
 import {
   useState,
   useEffect,
-  useRef,
   useCallback,
 } from "react";
 import { AnimatePresence, motion, useMotionValue, useSpring } from "framer-motion";
@@ -15,6 +14,7 @@ interface Video {
   title: string;
   client: string;
   category: string;
+  description: string;
   embedUrl: string;
   /** Optional Cloudinary autoplay URL for the featured section */
   cloudinaryUrl?: string;
@@ -25,18 +25,18 @@ interface Video {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const VIDEOS: Video[] = [
-  { id: 1,  title: "SUZARAIN FURNITURE",           client: "Suzarain Furniture",   category: "Furniture",             orientation: "landscape", isFeatured: true,  embedUrl: "https://www.youtube.com/embed/UBzFSXZmYrA" },
-  { id: 2,  title: "THE DREAM Ft. Maheen",         client: "@thatboujeefactor",    category: "Fashion & Influencer",  orientation: "landscape", isFeatured: true,  embedUrl: "https://www.youtube.com/embed/tpOrtLjocUY" },
-  { id: 3,  title: "AZŌRTE Store Launch",          client: "@_shashankdeshpande",  category: "Fashion & Influencer",  orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/4Ds-xRxNv5s" },
-  { id: 4,  title: "Courtyard Marriott Christmas", client: "Courtyard Marriott",   category: "Events",                orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/zm10wlEa7yI" },
-  { id: 5,  title: "LAKMÉ Salon Visit",            client: "@poorni_gowdaaa",      category: "Salon & Lifestyle",     orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/9RBwFyYTjOA" },
-  { id: 6,  title: "MAX Fashion Store",            client: "@somethingname",       category: "Fashion & Influencer",  orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/zhqlZS3jnBY" },
-  { id: 7,  title: "Play Salon Visit",             client: "@playsaloon",          category: "Salon & Lifestyle",     orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/1ctfzoaHXjw" },
-  { id: 8,  title: "Style Union PR",               client: "@SUSHMITAREDDY",       category: "Fashion & Influencer",  orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/Gxi2T5rQk5E" },
-  { id: 9,  title: "Puppawccino",                  client: "@puppawccino",         category: "Salon & Lifestyle",     orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/av-kbls4wrs" },
-  { id: 10, title: "Rasa Jewellery",               client: "@rasajewellery",       category: "Jewellery",             orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/WBqvnOaVjo8" },
-  { id: 11, title: "Shein India",                  client: "@snehithaa_kushwaha",  category: "Fashion & Influencer",  orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/YikChcIoGl8" },
-  { id: 12, title: "Taayani Jewellers",            client: "@taayaanijewellery",   category: "Jewellery",             orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/MVLElgyX4GQ" },
+  { id: 1,  title: "SUZARAIN FURNITURE",           client: "Suzarain Furniture",   category: "Furniture",             description: "A cinematic showcase of premium furniture pieces highlighting craftsmanship and elegant design.", orientation: "landscape", isFeatured: true,  embedUrl: "https://www.youtube.com/embed/UBzFSXZmYrA" },
+  { id: 2,  title: "THE DREAM Ft. Maheen",         client: "@thatboujeefactor",    category: "Fashion & Influencer",  description: "A stylish fashion editorial capturing the essence of modern influencer aesthetics.", orientation: "landscape", isFeatured: true,  embedUrl: "https://www.youtube.com/embed/tpOrtLjocUY" },
+  { id: 3,  title: "AZŌRTE Store Launch",          client: "@_shashankdeshpande",  category: "Fashion & Influencer",  description: "High-energy event coverage capturing the vibrant atmosphere of the AZŌRTE store grand opening.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/4Ds-xRxNv5s" },
+  { id: 4,  title: "Courtyard Marriott Christmas", client: "Courtyard Marriott",   category: "Events",                description: "A festive and heartwarming look into the holiday celebrations at the Courtyard Marriott.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/zm10wlEa7yI" },
+  { id: 5,  title: "LAKMÉ Salon Visit",            client: "@poorni_gowdaaa",      category: "Salon & Lifestyle",     description: "A dynamic and stylish showcase of premium salon services and lifestyle transformations.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/9RBwFyYTjOA" },
+  { id: 6,  title: "MAX Fashion Store",            client: "@somethingname",       category: "Fashion & Influencer",  description: "Highlighting the latest apparel collections and engaging in-store experiences at MAX Fashion.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/zhqlZS3jnBY" },
+  { id: 7,  title: "Play Salon Visit",             client: "@playsaloon",          category: "Salon & Lifestyle",     description: "Capturing top-tier grooming and styling services in a modern, luxurious salon environment.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/1ctfzoaHXjw" },
+  { id: 8,  title: "Style Union PR",               client: "@SUSHMITAREDDY",       category: "Fashion & Influencer",  description: "An exclusive PR package unboxing and fashion showcase featuring local influencers.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/Gxi2T5rQk5E" },
+  { id: 9,  title: "Puppawccino",                  client: "@puppawccino",         category: "Salon & Lifestyle",     description: "A playful, heartwarming look into premium pet grooming services and happy customers.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/av-kbls4wrs" },
+  { id: 10, title: "Rasa Jewellery",               client: "@rasajewellery",       category: "Jewellery",             description: "Highlighting the intricate details and stunning craftsmanship of the Rasa Jewellery collection.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/WBqvnOaVjo8" },
+  { id: 11, title: "Shein India",                  client: "@snehithaa_kushwaha",  category: "Fashion & Influencer",  description: "Trendy fashion transitions and outfit inspirations featuring the latest Shein styles.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/YikChcIoGl8" },
+  { id: 12, title: "Taayani Jewellers",            client: "@taayaanijewellery",   category: "Jewellery",             description: "Elegant and timeless jewelry pieces captured in a breathtaking visual showcase.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/MVLElgyX4GQ" },
 ];
 
 const CATEGORIES = ["All", "Fashion & Influencer", "Events", "Salon & Lifestyle", "Jewellery", "Furniture"];
@@ -80,10 +80,14 @@ function FeaturedCard({
   video,
   index,
   onOpen,
+  onCursorEnter,
+  onCursorLeave,
 }: {
   video: Video;
   index: number;
   onOpen: (v: Video) => void;
+  onCursorEnter: () => void;
+  onCursorLeave: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
   const thumb = ytThumb(video.embedUrl, true);
@@ -93,10 +97,10 @@ function FeaturedCard({
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.9, delay: index * 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="relative overflow-hidden cursor-pointer group"
+      className="relative overflow-hidden cursor-none group"
       style={{ aspectRatio: "16/10" }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => { setHovered(true); onCursorEnter(); }}
+      onMouseLeave={() => { setHovered(false); onCursorLeave(); }}
       onClick={() => onOpen(video)}
       role="button"
       tabIndex={0}
@@ -139,16 +143,6 @@ function FeaturedCard({
         </span>
       </div>
 
-      {/* Play ring — fades in on hover */}
-      <div
-        className="absolute inset-0 z-10 flex items-center justify-center transition-opacity duration-300"
-        style={{ opacity: hovered ? 1 : 0 }}
-      >
-        <div className="w-16 h-16 rounded-full border border-gold/60 bg-canvas/10 backdrop-blur-md flex items-center justify-center text-gold shadow-lg">
-          <PlayIcon size={16} />
-        </div>
-      </div>
-
       {/* Title block */}
       <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
         <p className="font-body text-[9px] tracking-[0.28em] uppercase text-gold mb-2">
@@ -174,208 +168,78 @@ function FeaturedCard({
   );
 }
 
-// ─── Marquee Row ──────────────────────────────────────────────────────────────
+// ─── Grid Card ────────────────────────────────────────────────────────────────
 
-function MarqueeRow({
+function GridCard({
   video,
   index,
-  isActive,
-  onHover,
-  onLeave,
   onOpen,
+  onCursorEnter,
+  onCursorLeave,
 }: {
   video: Video;
   index: number;
-  isActive: boolean;
-  onHover: () => void;
-  onLeave: () => void;
   onOpen: () => void;
+  onCursorEnter: () => void;
+  onCursorLeave: () => void;
 }) {
   const thumb = ytThumb(video.embedUrl, false);
-  const isPortrait = video.orientation === "portrait";
+  const [hovered, setHovered] = useState(false);
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -16 }}
-      transition={{ duration: 0.5, delay: index * 0.06, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="group relative border-b border-warm-gray/25 cursor-pointer select-none"
-      onMouseEnter={onHover}
-      onMouseLeave={onLeave}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.5, delay: index * 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="group relative flex flex-col cursor-none"
+      onMouseEnter={() => { setHovered(true); onCursorEnter(); }}
+      onMouseLeave={() => { setHovered(false); onCursorLeave(); }}
       onClick={onOpen}
       role="button"
       tabIndex={0}
       aria-label={`Play ${video.title}`}
       onKeyDown={(e) => e.key === "Enter" && onOpen()}
     >
-      {/* Hover background fill — sweeps from left */}
-      <div
-        className="absolute inset-0 bg-charcoal/[0.035] origin-left transition-transform duration-500 ease-out"
-        style={{ transform: isActive ? "scaleX(1)" : "scaleX(0)" }}
-      />
-
-      <div className="relative flex items-center gap-4 md:gap-6 py-5 md:py-6 px-2 md:px-4">
-
-        {/* Sequence number */}
-        <div className="flex-none w-8 md:w-12 text-right">
-          <span
-            className="font-heading text-xs md:text-sm font-bold transition-colors duration-300"
-            style={{ color: isActive ? "var(--color-gold)" : "rgba(44,44,44,0.2)" }}
-          >
-            {zeroPad(index + 1)}
-          </span>
-        </div>
-
-        {/* Title and Details */}
-        <div className="flex-1 min-w-0 flex flex-col justify-center py-1">
-          <h3
-            className="font-heading font-bold leading-none tracking-tight transition-colors duration-300 truncate"
-            style={{
-              fontSize: "clamp(1.25rem, 3.5vw, 2.2rem)",
-              color: isActive ? "var(--color-charcoal)" : "rgba(44,44,44,0.55)",
-            }}
-          >
-            {video.title}
-          </h3>
-          
-          <div className="flex items-center gap-3 md:gap-4 mt-2 md:mt-3">
-             <span className="font-body text-[8px] md:text-[9px] tracking-[0.2em] uppercase text-charcoal/60 bg-warm-gray/30 px-2 py-0.5 border border-warm-gray/20">
-               {video.category}
-             </span>
-             <span 
-                className="font-body text-[9px] md:text-[10px] tracking-widest transition-colors duration-300"
-                style={{ color: isActive ? "rgba(44,44,44,0.7)" : "rgba(44,44,44,0.4)" }}
-             >
-               {video.client}
-             </span>
-          </div>
-        </div>
-
-        {/* Small Thumbnail Indicator */}
-        <div className="flex-none flex items-center justify-end pl-2">
-          <div 
-             className="relative overflow-hidden border border-warm-gray/40 shadow-sm transition-transform duration-500 ease-out"
-             style={{ 
-               width: isPortrait ? "48px" : "86px", 
-               aspectRatio: isPortrait ? "9/16" : "16/9",
-               transform: isActive ? "scale(1.08)" : "scale(1)"
-             }}
-          >
-             {/* Thumbnail Image */}
-             <div
-               className="absolute inset-0 bg-cover bg-center transition-transform duration-700"
-               style={{ 
-                 backgroundImage: `url(${thumb})`,
-                 transform: isActive ? "scale(1.1)" : "scale(1)" 
-               }}
-             />
-             
-             {/* Dark overlay that lightens slightly on hover */}
-             <div 
-                className="absolute inset-0 transition-colors duration-300" 
-                style={{ backgroundColor: isActive ? "rgba(44,44,44,0.15)" : "rgba(44,44,44,0.4)" }} 
-             />
-             
-             {/* Small Play Button */}
-             <div className="absolute inset-0 flex items-center justify-center text-canvas drop-shadow-md">
-               <div 
-                  className="flex items-center justify-center rounded-full bg-charcoal/40 backdrop-blur-sm border border-canvas/30 transition-colors duration-300"
-                  style={{ 
-                     width: "24px", 
-                     height: "24px",
-                     borderColor: isActive ? "var(--color-gold)" : "rgba(248, 245, 240, 0.3)",
-                     color: isActive ? "var(--color-gold)" : "var(--color-canvas)"
-                  }}
-               >
-                 <PlayIcon size={10} />
-               </div>
-             </div>
-          </div>
-        </div>
+      {/* Thumbnail container */}
+      <div 
+        className="relative w-full overflow-hidden mb-5 shadow-sm group-hover:shadow-lg transition-shadow duration-500"
+        style={{ aspectRatio: "9/16" }}
+      >
+         <div
+           className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out"
+           style={{ 
+             backgroundImage: `url(${thumb})`,
+             transform: hovered ? "scale(1.05)" : "scale(1)" 
+           }}
+         />
+         <div 
+           className="absolute inset-0 transition-colors duration-300" 
+           style={{ backgroundColor: hovered ? "rgba(44,44,44,0.15)" : "rgba(44,44,44,0.35)" }} 
+         />
+         
+         {/* Category Badge */}
+         <div className="absolute top-4 left-4">
+           <span className="font-body text-[8px] tracking-[0.2em] uppercase text-canvas/80 bg-black/40 backdrop-blur-md px-2.5 py-1.5 border border-white/10">
+             {video.category}
+           </span>
+         </div>
       </div>
 
-      {/* Gold underline sweep */}
-      <div
-        className="absolute bottom-0 left-0 h-[1.5px] bg-gold transition-all duration-500 ease-out"
-        style={{ width: isActive ? "100%" : "0%" }}
-      />
+      {/* Text Details */}
+      <div className="flex flex-col px-1">
+        <h3 className="font-heading text-lg md:text-xl text-charcoal font-bold leading-tight group-hover:text-gold transition-colors duration-300">
+          {video.title}
+        </h3>
+        <p className="font-body text-[10px] tracking-[0.2em] uppercase text-charcoal/40 mt-1.5 mb-2.5">
+          {video.client}
+        </p>
+        <p className="font-body text-sm text-charcoal/60 leading-relaxed">
+          {video.description}
+        </p>
+      </div>
     </motion.div>
-  );
-}
-
-// ─── Floating thumbnail preview ───────────────────────────────────────────────
-
-function FloatingPreview({
-  video,
-  containerRef,
-}: {
-  video: Video | null;
-  containerRef: React.RefObject<HTMLDivElement | null>;
-}) {
-  const rawX = useMotionValue(0);
-  const rawY = useMotionValue(0);
-  const x = useSpring(rawX, { damping: 22, stiffness: 260, mass: 0.5 });
-  const y = useSpring(rawY, { damping: 22, stiffness: 260, mass: 0.5 });
-
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      const rect = containerRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      rawX.set(e.clientX - rect.left);
-      rawY.set(e.clientY - rect.top);
-    };
-    window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
-  }, [rawX, rawY, containerRef]);
-
-  const isPortrait = video?.orientation === "portrait";
-  const thumb = video ? ytThumb(video.embedUrl, false) : "";
-
-  return (
-    <AnimatePresence mode="wait">
-      {video && (
-        <motion.div
-          key={video.id}
-          className="absolute top-0 left-0 z-20 pointer-events-none overflow-hidden shadow-2xl shadow-charcoal/20"
-          style={{
-            x,
-            y,
-            translateX: "-50%",
-            translateY: "-55%",
-            width: isPortrait ? 130 : 220,
-            aspectRatio: isPortrait ? "9/16" : "16/9",
-          }}
-          initial={{ opacity: 0, scale: 0.82 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.88 }}
-          transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
-        >
-          {/* Thumbnail */}
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${thumb})` }}
-          />
-          <div className="absolute inset-0 bg-charcoal/15" />
-
-          {/* Gold border */}
-          <div className="absolute inset-0 border border-gold/30" />
-
-          {/* Tiny play icon */}
-          <div className="absolute inset-0 flex items-center justify-center text-canvas/70">
-            <PlayIcon size={20} />
-          </div>
-
-          {/* Orientation label */}
-          <div className="absolute bottom-2 right-2">
-            <span className="font-body text-[7px] tracking-[0.2em] uppercase text-canvas/50">
-              {isPortrait ? "Short" : "Film"}
-            </span>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
   );
 }
 
@@ -458,9 +322,22 @@ function VideoModal({ video, onClose }: { video: Video; onClose: () => void }) {
 
 export default function VideoGallery() {
   const [activeCategory, setActiveCategory] = useState("All");
-  const [hoveredId, setHoveredId]           = useState<number | null>(null);
   const [openVideo, setOpenVideo]           = useState<Video | null>(null);
-  const marqueeRef = useRef<HTMLDivElement>(null);
+  const [cursorActive, setCursorActive]     = useState(false);
+
+  const rawX = useMotionValue(-100);
+  const rawY = useMotionValue(-100);
+  const cursorX = useSpring(rawX, { damping: 25, stiffness: 350, mass: 0.5 });
+  const cursorY = useSpring(rawY, { damping: 25, stiffness: 350, mass: 0.5 });
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      rawX.set(e.clientX - 40); // 40px is half of w-20 (80px)
+      rawY.set(e.clientY - 40);
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, [rawX, rawY]);
 
   const handleOpen = useCallback((v: Video) => setOpenVideo(v), []);
   const handleClose = useCallback(() => setOpenVideo(null), []);
@@ -470,12 +347,24 @@ export default function VideoGallery() {
       ? REELS
       : REELS.filter((v) => v.category === activeCategory);
 
-  const hoveredVideo = hoveredId !== null
-    ? REELS.find((v) => v.id === hoveredId) ?? null
-    : null;
-
   return (
     <>
+      {/* ── Magnetic Play Cursor ── */}
+      <motion.div
+        className="fixed top-0 left-0 z-[60] w-20 h-20 rounded-full bg-gold pointer-events-none flex items-center justify-center shadow-lg"
+        style={{ x: cursorX, y: cursorY }}
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ 
+          scale: cursorActive && !openVideo ? 1 : 0, 
+          opacity: cursorActive && !openVideo ? 1 : 0 
+        }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
+        <span className="font-heading text-[10px] tracking-widest uppercase text-charcoal font-bold">
+          Play
+        </span>
+      </motion.div>
+
       {/* ── Section wrapper ── */}
       <section className="py-20 md:py-28 px-6 max-w-7xl mx-auto">
 
@@ -509,12 +398,14 @@ export default function VideoGallery() {
               video={video}
               index={i}
               onOpen={handleOpen}
+              onCursorEnter={() => setCursorActive(true)}
+              onCursorLeave={() => setCursorActive(false)}
             />
           ))}
         </div>
 
         {/* ── Reels section ── */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div className="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div>
             <p className="font-body text-[9px] tracking-[0.38em] uppercase text-charcoal/35 mb-2">
               Short Form
@@ -553,18 +444,8 @@ export default function VideoGallery() {
           </div>
         </div>
 
-        {/* ── Marquee list ── */}
-        <div
-          ref={marqueeRef}
-          className="relative border-t border-warm-gray/25"
-          // Hide the floating preview on touch / mobile
-          onMouseLeave={() => setHoveredId(null)}
-        >
-          {/* Floating thumbnail — desktop only */}
-          <div className="hidden lg:block">
-            <FloatingPreview video={hoveredVideo} containerRef={marqueeRef} />
-          </div>
-
+        {/* ── Grid List ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-14">
           <AnimatePresence mode="popLayout">
             {visibleReels.length === 0 ? (
               <motion.p
@@ -572,20 +453,19 @@ export default function VideoGallery() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="font-body text-sm text-charcoal/35 py-16 text-center tracking-widest"
+                className="col-span-full font-body text-sm text-charcoal/35 py-16 text-center tracking-widest"
               >
                 No reels in this category yet.
               </motion.p>
             ) : (
               visibleReels.map((video, i) => (
-                <MarqueeRow
+                <GridCard
                   key={video.id}
                   video={video}
                   index={i}
-                  isActive={hoveredId === video.id}
-                  onHover={() => setHoveredId(video.id)}
-                  onLeave={() => setHoveredId(null)}
                   onOpen={() => handleOpen(video)}
+                  onCursorEnter={() => setCursorActive(true)}
+                  onCursorLeave={() => setCursorActive(false)}
                 />
               ))
             )}

@@ -12,7 +12,7 @@ import MagneticButton from "./MagneticButton";
 const whyWork = [
   {
     title: "Personal Editing & Color Grading",
-    desc: "Every frame, every color, every cut — handled personally. No outsourcing, no compromise.",
+    desc: "Every frame, every color, every cut, handled personally. No outsourcing, no compromise.",
   },
   {
     title: "Chill & Collaborative",
@@ -133,11 +133,11 @@ export default function HomeClient({ homepagePhotos }: { homepagePhotos: string[
               </h2>
               <div className="space-y-5 font-body leading-[1.9] text-sm md:text-base opacity-80">
                 <p className="text-xl font-medium !opacity-100 leading-snug">
-                  Hey, I'm John — a freelance videographer and photographer driven by a genuine love
+                  Hey, I'm John, a freelance videographer and photographer driven by a genuine love
                   for the craft. Every aspect of my work is handled personally.
                 </p>
                 <p>
-                  What I do isn't just about capturing moments. It's about building narratives — whether
+                  What I do isn't just about capturing moments. It's about building narratives,
                   it's the story of a brand, the emotion of an event, or the soul of a space. I bring a
                   cinematic sensibility to every project, large or small.
                 </p>

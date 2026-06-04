@@ -27,16 +27,16 @@ export default function ContactPage() {
           Start Something<br />Extraordinary
         </h1>
         <p className="font-body text-charcoal/60 text-lg max-w-2xl mx-auto leading-relaxed mb-16">
-          Whether you have a clear vision or just the beginning of an idea — I'd love to hear about it. I typically respond within 24 hours.
+          Whether you have a clear vision or just the beginning of an idea, I'd love to hear about it. I typically respond within 24 hours.
         </p>
 
         {/* Primary Contact: Massive Email Link */}
-        <a 
-          href="mailto:infantjohna@email.com"
+        <a
+          href="mailto:Infantjohn2005@gmail.com"
           className="group relative inline-block mb-20"
         >
           <span className="font-heading text-3xl md:text-5xl lg:text-6xl text-charcoal group-hover:text-gold transition-colors duration-500 ease-out">
-            infantjohna@email.com
+            Infantjohn2005@gmail.com
           </span>
           <div className="h-[2px] w-full bg-gold scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left mt-2"></div>
         </a>
@@ -44,10 +44,10 @@ export default function ContactPage() {
         {/* Secondary Links Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16 w-full border-t border-b border-warm-gray/30 py-12">
           {[
-            { label: "Phone", value: "+91 XX XXXX XXXX", href: "tel:+91XXXXXXXXXX" },
-            { label: "Instagram", value: "@infantjohna", href: "https://instagram.com" },
-            { label: "Behance", value: "infantjohna", href: "https://behance.net" },
-            { label: "YouTube", value: "Infant John A", href: "https://youtube.com" },
+            { label: "Phone", value: "+91 90606 87887", href: "tel:+91XXXXXXXXXX" },
+            { label: "Instagram", value: "@infant_john.79", href: "https://www.instagram.com/infant_john.79" },
+            { label: "Behance", value: "INFANT JOHN A", href: "https://www.behance.net/infantjohn" },
+            { label: "YouTube", value: "@infantjohna", href: "https://www.youtube.com/@infantjohna" },
           ].map(({ label, value, href }) => (
             <a
               key={label}

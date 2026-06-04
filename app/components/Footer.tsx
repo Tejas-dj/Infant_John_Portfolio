@@ -68,20 +68,20 @@ export default function Footer() {
               href="tel:+91XXXXXXXXXX"
               className="font-body text-sm text-charcoal/50 hover:text-gold transition-colors"
             >
-              +91 XX XXXX XXXX
+              +91 90606 87887
             </a>
             <span className="hidden sm:block text-warm-gray">·</span>
             <a
-              href="mailto:infantjohna@email.com"
+              href="mailto:Infantjohn2005@gmail.com"
               className="font-body text-sm text-charcoal/50 hover:text-gold transition-colors"
             >
-              infantjohna@email.com
+              Infantjohn2005@gmail.com
             </a>
           </div>
 
           <div className="flex items-center gap-5">
             <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/infant_john.79"
               target="_blank"
               rel="noopener noreferrer"
               className="text-charcoal/40 hover:text-gold transition-colors"
@@ -90,7 +90,7 @@ export default function Footer() {
               <InstagramIcon />
             </a>
             <a
-              href="https://behance.net"
+              href="https://www.behance.net/infantjohn"
               target="_blank"
               rel="noopener noreferrer"
               className="font-body text-sm font-bold text-charcoal/40 hover:text-gold transition-colors tracking-wider"
@@ -99,7 +99,7 @@ export default function Footer() {
               Bē
             </a>
             <a
-              href="https://youtube.com"
+              href="https://www.youtube.com/@infantjohna"
               target="_blank"
               rel="noopener noreferrer"
               className="text-charcoal/40 hover:text-gold transition-colors"
@@ -109,16 +109,29 @@ export default function Footer() {
             </a>
           </div>
 
-          <div className="flex items-center gap-5">
-            <p className="font-body text-xs text-charcoal/35">
-              © {year} Infant John A. All rights reserved.
+          <div className="flex flex-col items-center md:items-end gap-2">
+            <div className="flex items-center gap-5">
+              <p className="font-body text-xs text-charcoal/35">
+                © {year} Infant John A. All rights reserved.
+              </p>
+              <Link
+                href="/privacy-policy"
+                className="font-body text-xs text-charcoal/35 hover:text-gold transition-colors duration-300"
+              >
+                Privacy Policy
+              </Link>
+            </div>
+            <p className="font-body text-[10.5px] text-charcoal/50 tracking-widest uppercase mt-2">
+              Made by{" "}
+              <a
+                href="https://www.linkedin.com/in/tejas-d-jaiprakash/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-charcoal hover:text-gold transition-colors underline decoration-warm-gray hover:decoration-gold underline-offset-4"
+              >
+                Tejas D Jaiprakash
+              </a>
             </p>
-            <Link
-              href="/privacy-policy"
-              className="font-body text-xs text-charcoal/35 hover:text-gold transition-colors duration-300"
-            >
-              Privacy Policy
-            </Link>
           </div>
         </div>
       </div>

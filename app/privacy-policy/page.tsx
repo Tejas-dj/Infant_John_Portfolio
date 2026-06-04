@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 };
 
 const EFFECTIVE_DATE = "28 May 2026";
-const CONTACT_EMAIL = "infantjohna@email.com";
+const CONTACT_EMAIL = "Infantjohn2005@gmail.com";
 const SITE_URL = "https://infantjohna.com";
 
 const Section = ({
@@ -112,7 +112,7 @@ export default function PrivacyPolicyPage() {
             based in India.
           </p>
           <p>
-            This Site is a personal portfolio — its sole purpose is to showcase
+            This Site is a personal portfolio. Its sole purpose is to showcase
             creative work and provide a way for potential clients and collaborators
             to get in touch. We are committed to being transparent about the very
             limited data involved in operating this Site.
@@ -149,7 +149,7 @@ export default function PrivacyPolicyPage() {
                 Voluntarily Provided Information:
               </strong>{" "}
               If you choose to contact John directly via email, phone, or social
-              media — links to which are displayed on this Site — any information
+              media, links to which are displayed on this Site, and any information
               you share is governed by the privacy policy of that respective
               platform (e.g., Gmail, WhatsApp, Instagram). John will only use
               information you share to respond to your enquiry and will not share
@@ -208,7 +208,7 @@ export default function PrivacyPolicyPage() {
               <strong className="text-charcoal font-medium">
                 YouTube / Google LLC
               </strong>{" "}
-              — Video embeds on the Videography page. When you interact with an
+              Video embeds on the Videography page. When you interact with an
               embedded video, YouTube may collect data per their{" "}
               <a
                 href="https://policies.google.com/privacy"
@@ -224,7 +224,7 @@ export default function PrivacyPolicyPage() {
               <strong className="text-charcoal font-medium">
                 Vimeo, Inc.
               </strong>{" "}
-              — Alternative video embeds, governed by{" "}
+              Alternative video embeds, governed by{" "}
               <a
                 href="https://vimeo.com/privacy"
                 className="text-gold hover:underline"
@@ -239,7 +239,7 @@ export default function PrivacyPolicyPage() {
               <strong className="text-charcoal font-medium">
                 Instagram / Meta Platforms, Inc.
               </strong>{" "}
-              — External link only. Governed by{" "}
+              External link only. Governed by{" "}
               <a
                 href="https://privacycenter.instagram.com/policy"
                 className="text-gold hover:underline"
@@ -254,7 +254,7 @@ export default function PrivacyPolicyPage() {
               <strong className="text-charcoal font-medium">
                 Behance / Adobe Inc.
               </strong>{" "}
-              — External link only. Governed by{" "}
+              External link only. Governed by{" "}
               <a
                 href="https://www.adobe.com/privacy/policy.html"
                 className="text-gold hover:underline"
@@ -269,7 +269,7 @@ export default function PrivacyPolicyPage() {
               <strong className="text-charcoal font-medium">
                 Vercel, Inc.
               </strong>{" "}
-              — Hosting provider. May collect anonymised infrastructure logs per{" "}
+              Hosting provider. May collect anonymised infrastructure logs per{" "}
               <a
                 href="https://vercel.com/legal/privacy-policy"
                 className="text-gold hover:underline"
@@ -284,7 +284,7 @@ export default function PrivacyPolicyPage() {
               <strong className="text-charcoal font-medium">
                 Google Fonts
               </strong>{" "}
-              — Typography. Google may log requests for font files. See{" "}
+              Typography. Google may log requests for font files. See{" "}
               <a
                 href="https://policies.google.com/privacy"
                 className="text-gold hover:underline"

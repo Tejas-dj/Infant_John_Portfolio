@@ -102,7 +102,7 @@ export default function HomeHero() {
         >
           Videographer &amp; Photographer
           <br />
-          Light, story, and precision — delivered with heart.
+          Light, story, and precision. Delivered with heart.
         </motion.p>
 
         <motion.div

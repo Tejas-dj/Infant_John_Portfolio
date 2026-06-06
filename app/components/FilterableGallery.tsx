@@ -61,7 +61,19 @@ export default function FilterableGallery({ photos }: { photos: Photo[] }) {
   const visible =
     active === "All" ? photos : photos.filter((item) => item.category === active);
 
-  const displayCategories = ["All", ...Array.from(new Set(photos.map((p) => p.category)))];
+  const PRIORITY_ORDER = [
+    "Wedding",
+    "Pub and Nightlife",
+    "Potraits",
+    "Family Events",
+    "Auto Mobile",
+  ];
+  const allCats = Array.from(new Set(photos.map((p) => p.category)));
+  const orderedCats = [
+    ...PRIORITY_ORDER.filter((c) => allCats.includes(c)),
+    ...allCats.filter((c) => !PRIORITY_ORDER.includes(c)),
+  ];
+  const displayCategories = ["All", ...orderedCats];
 
   return (
     <section className="py-20 w-full overflow-hidden">

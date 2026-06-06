@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import VideoGallery from "../components/VideoGallery";
 import VideographyHero from "../components/VideographyHero";
+import { getVideoThumbnails } from "../lib/cloudinary";
 
 export const metadata: Metadata = {
   title: "Videography",
@@ -19,11 +20,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function VideographyPage() {
+export default async function VideographyPage() {
+  const thumbnails = await getVideoThumbnails();
   return (
     <>
       <VideographyHero />
-      <VideoGallery />
+      <VideoGallery thumbnails={thumbnails} />
     </>
   );
 }

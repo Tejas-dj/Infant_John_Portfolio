@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef, useState } from "react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 
 function PlayIcon() {
   return (
@@ -13,6 +13,7 @@ function PlayIcon() {
 
 export default function VideographyHero() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [playing, setPlaying] = useState(false);
   
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -97,30 +98,49 @@ export default function VideographyHero() {
             transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
             className="relative z-10 w-full md:max-w-full aspect-video bg-warm-gray/10 md:p-3 md:pb-12 shadow-2xl shadow-charcoal/5 group"
           >
-            {/* Image Container */}
+            {/* Video Container */}
             <div className="relative w-full h-full overflow-hidden bg-charcoal">
-               <motion.div 
-                 className="absolute inset-0 w-full h-full transition-transform duration-1000 group-hover:scale-105"
-                 style={{
-                   backgroundImage: "url(/videos/thumbnails/reel-thumbnail.jpg)",
-                   backgroundSize: "cover",
-                   backgroundPosition: "center",
-                 }}
-               />
-               <div className="absolute inset-0 bg-charcoal/20 group-hover:bg-charcoal/10 transition-colors duration-500" />
-               
-               {/* Magnetic Play Button (Centered in video) */}
-               <div className="absolute inset-0 flex items-center justify-center">
-                 <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-canvas/30 backdrop-blur-md border border-canvas/50 flex items-center justify-center text-canvas cursor-pointer group-hover:bg-gold group-hover:text-charcoal group-hover:border-gold group-hover:scale-110 transition-all duration-500 shadow-lg">
-                   <PlayIcon />
-                 </div>
-               </div>
+              <AnimatePresence mode="wait">
+                {!playing ? (
+                  <motion.div key="thumb" className="absolute inset-0" initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+                    <motion.div
+                      className="absolute inset-0 w-full h-full transition-transform duration-1000 group-hover:scale-105"
+                      style={{
+                        backgroundImage: `url(https://img.youtube.com/vi/UBzFSXZmYrA/maxresdefault.jpg)`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-charcoal/20 group-hover:bg-charcoal/10 transition-colors duration-500" />
+                    {/* Play Button */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <button
+                        onClick={() => setPlaying(true)}
+                        aria-label="Play Suzarain Furniture video"
+                        className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-canvas/30 backdrop-blur-md border border-canvas/50 flex items-center justify-center text-canvas cursor-pointer hover:bg-gold hover:text-charcoal hover:border-gold hover:scale-110 transition-all duration-500 shadow-lg"
+                      >
+                        <PlayIcon />
+                      </button>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div key="player" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+                    <iframe
+                      src="https://www.youtube.com/embed/UBzFSXZmYrA?autoplay=1&rel=0&modestbranding=1"
+                      className="absolute inset-0 w-full h-full"
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      allowFullScreen
+                      title="Suzarain Furniture"
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-            
+
             {/* Polaroid style text - Hidden on mobile, shown on desktop */}
             <div className="hidden md:flex absolute bottom-4 left-5 right-5 justify-between items-center text-charcoal/50 font-body text-[10px] tracking-widest uppercase">
-              <span>Showreel</span>
-              <span>1:45</span>
+              <span>Suzarain Furniture</span>
+              <span>Featured Film</span>
             </div>
           </motion.div>
 

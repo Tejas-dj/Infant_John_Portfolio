@@ -82,7 +82,7 @@ export const getAllPhotos = unstable_cache(
     }
     return merged.map((photo, i) => ({ ...photo, id: i + 1 }));
   },
-  ['cloudinary-all-photos-v2'],  // bumped to invalidate cache that pre-dates width/height fields
+  ['cloudinary-all-photos-v3'],  // bumped to pick up new Potrait_42_yqzsbp upload
   { revalidate: 3600 }
 );
 
@@ -104,5 +104,25 @@ export const getHomepagePhotos = unstable_cache(
     return resources.map((r) => r.public_id as string);
   },
   ['cloudinary-homepage-photos'],
+  { revalidate: 3600 }
+);
+
+// Returns a map of display_name → public_id for images in the thumbnails folder
+export const getVideoThumbnails = unstable_cache(
+  async (): Promise<Record<string, string>> => {
+    if (!isCloudinaryConfigured()) return {};
+    const result = await cloudinary.api.resources_by_asset_folder('thumbnails', {
+      resource_type: 'image',
+      max_results: 100,
+    });
+    const map: Record<string, string> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const r of result.resources as any[]) {
+      const displayName = (r.display_name as string) || (r.public_id as string).split('/').pop() || '';
+      map[displayName] = r.public_id as string;
+    }
+    return map;
+  },
+  ['cloudinary-video-thumbnails-v1'],
   { revalidate: 3600 }
 );

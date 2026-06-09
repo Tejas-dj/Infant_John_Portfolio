@@ -93,7 +93,7 @@ export default function HomeHero() {
           variants={rise}
           className="font-heading text-5xl sm:text-7xl lg:text-8xl text-canvas font-bold leading-[1.05] mb-6"
         >
-          Infant <span className="font-body font-light italic text-[0.9em]">John</span> A
+          Infant John A
         </motion.h1>
 
         <motion.p

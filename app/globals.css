@@ -39,6 +39,12 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 1px;
 }
 
+/* Footer credit links: the gold ring above is only 1.9:1 on the canvas, so use charcoal. */
+.credit a:focus-visible {
+  outline-color: var(--color-charcoal);
+  outline-offset: 4px;
+}
+
 @utility scrollbar-none {
   scrollbar-width: none;
   &::-webkit-scrollbar {

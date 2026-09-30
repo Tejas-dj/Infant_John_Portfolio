@@ -94,14 +94,14 @@ All colours are defined as Tailwind custom tokens. **Never hardcode hex values i
 - `<ScrollProgress />` — gold progress bar at top of viewport
 - `<Navigation />` — sticky top nav
 - `<PageTransition />` — fade+scale route transitions
-- `<Footer />` — site-wide footer with CTA, socials, copyright, privacy link
+- `<Footer />` — site-wide footer with CTA, socials, copyright, privacy link, site credit
 
 ### Components Directory: `app/components/`
 
 | Component | Purpose |
 |-----------|---------|
 | `Navigation.tsx` | Sticky nav with mobile hamburger slide-in |
-| `Footer.tsx` | Global footer — CTA, contact links, socials, copyright, privacy policy link |
+| `Footer.tsx` | Global footer — CTA, contact links, socials, copyright, privacy policy link, site credit (fixed wording — do not edit) |
 | `HoneycombGrid.tsx` | Apple Watch-style magnetic honeycomb grid for photography hero |
 | `FilterableGallery.tsx` | Filterable masonry gallery with category tabs (photography) |
 | `VideoGallery.tsx` | Video card grid with embedded player lightbox (videography) |

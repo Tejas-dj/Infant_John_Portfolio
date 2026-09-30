@@ -39,6 +39,11 @@ function YouTubeIcon() {
   );
 }
 
+// Site credit link style: bold + underline so links never rely on colour alone.
+// The keyboard focus ring for these links is overridden in globals.css (.credit a:focus-visible).
+const creditLinkClass =
+  "font-bold text-charcoal underline decoration-charcoal/60 underline-offset-4 whitespace-nowrap hover:text-gold hover:decoration-gold transition-colors";
+
 export default function Footer() {
   const year = new Date().getFullYear();
 
@@ -121,17 +126,7 @@ export default function Footer() {
                 Privacy Policy
               </Link>
             </div>
-            <p className="font-body text-[10.5px] text-charcoal/50 tracking-widest uppercase mt-2">
-              Made by{" "}
-              <a
-                href="https://www.linkedin.com/in/tejas-d-jaiprakash/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-bold text-charcoal hover:text-gold transition-colors underline decoration-warm-gray hover:decoration-gold underline-offset-4"
-              >
-                Tejas D Jaiprakash
-              </a>
-            </p>
+            <p className="credit font-body text-xs text-charcoal/70 text-center md:text-right mt-2">Website by <a href="https://cobaltkitecreative.com/" rel="nofollow" className={creditLinkClass}>CobaltKite Creative</a> · Founder <a href="https://cobaltkitecreative.com/about/tejas-d-jaiprakash/" rel="nofollow" className={creditLinkClass}>Tejas D Jaiprakash</a></p>
           </div>
         </div>
       </div>

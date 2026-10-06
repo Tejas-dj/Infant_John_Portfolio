@@ -47,14 +47,16 @@ function PlayIcon() {
 // Desired photo order (1-indexed positions from Cloudinary homepage folder)
 const CURATED_ORDER = [4, 2, 5, 1, 8, 3, 6, 7];
 
-export default function HomeClient({ homepagePhotos }: { homepagePhotos: string[] }) {
-  // Exclude the headshot so it only appears in the About section
-  const galleryPhotos = homepagePhotos.filter(
-    (id) => !id.toLowerCase().includes('headshot_john_infant_a')
-  );
+export default function HomeClient({
+  homepagePhotos,
+  headshot,
+}: {
+  homepagePhotos: string[];
+  headshot: string | null;
+}) {
   const curatedItems = curatedMeta.map((item, i) => ({
     ...item,
-    publicId: galleryPhotos[CURATED_ORDER[i] - 1] ?? null,
+    publicId: homepagePhotos[CURATED_ORDER[i] - 1] ?? null,
   }));
   const containerRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
@@ -113,17 +115,19 @@ export default function HomeClient({ homepagePhotos }: { homepagePhotos: string[
 
             {/* Image (No Transition) */}
             <div className="relative aspect-[4/5] bg-charcoal/5 border border-current/10 overflow-hidden">
-              <CldImage
-                src="Headshot_John_Infant_A_aftv5v"
-                alt="Infant John A — Videographer & Photographer"
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                format="auto"
-                quality="auto"
-                crop="fill"
-                gravity="face"
-                className="object-cover object-top"
-              />
+              {headshot && (
+                <CldImage
+                  src={headshot}
+                  alt="Infant John A — Videographer & Photographer"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  format="auto"
+                  quality="auto"
+                  crop="fill"
+                  gravity="face"
+                  className="object-cover object-top"
+                />
+              )}
             </div>
 
             <div>

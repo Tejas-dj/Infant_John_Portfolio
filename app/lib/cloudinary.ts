@@ -17,18 +17,21 @@ function isCloudinaryConfigured(): boolean {
   );
 }
 
-// Folder name → display label: underscores become spaces
-function folderToLabel(folder: string): string {
-  return folder.replace(/_/g, ' ');
+// Everything lives under one top-level asset folder in the Cloudinary account
+const ROOT_FOLDER = 'INFANT JOHN A';
+
+function assetFolder(name: string): string {
+  return `${ROOT_FOLDER}/${name}`;
 }
 
-const FOLDERS = [
-  'Auto_Mobile',
-  'Family_Events',
+// Photography category folders — the folder name is also the display label
+const CATEGORY_FOLDERS = [
+  'Auto Mobile',
+  'Family Events',
   'Food',
   'Potraits',
   'Product',
-  'Pub_and_Nightlife',
+  'Pub and Nightlife',
   'Wedding',
 ];
 
@@ -39,9 +42,8 @@ function getOrientation(width: number, height: number): Photo['orientation'] {
   return 'square';
 }
 
-async function fetchFolder(folder: string): Promise<Omit<Photo, 'id'>[]> {
-  const category = folderToLabel(folder);
-  const result = await cloudinary.api.resources_by_asset_folder(folder, {
+async function fetchFolder(category: string): Promise<Omit<Photo, 'id'>[]> {
+  const result = await cloudinary.api.resources_by_asset_folder(assetFolder(category), {
     resource_type: 'image',
     max_results: 500,
   });
@@ -61,7 +63,7 @@ async function fetchFolder(folder: string): Promise<Omit<Photo, 'id'>[]> {
 export const getAllPhotos = unstable_cache(
   async (): Promise<Photo[]> => {
     if (!isCloudinaryConfigured()) return [];
-    const results = await Promise.all(FOLDERS.map(fetchFolder));
+    const results = await Promise.all(CATEGORY_FOLDERS.map(fetchFolder));
     const flat = results.flat();
     // Shuffle so categories are mixed in the honeycomb grid
     for (let i = flat.length - 1; i > 0; i--) {
@@ -82,15 +84,15 @@ export const getAllPhotos = unstable_cache(
     }
     return merged.map((photo, i) => ({ ...photo, id: i + 1 }));
   },
-  ['cloudinary-all-photos-v3'],  // bumped to pick up new Potrait_42_yqzsbp upload
+  ['cloudinary-all-photos-v4'],
   { revalidate: 3600 }
 );
 
-// Returns Homepage folder public IDs sorted by the sequence number in the display name
+// Returns Home_Page folder public IDs sorted by the sequence number in the display name
 export const getHomepagePhotos = unstable_cache(
   async (): Promise<string[]> => {
     if (!isCloudinaryConfigured()) return [];
-    const result = await cloudinary.api.resources_by_asset_folder('Homepage', {
+    const result = await cloudinary.api.resources_by_asset_folder(assetFolder('Home_Page'), {
       resource_type: 'image',
       max_results: 50,
     });
@@ -103,26 +105,46 @@ export const getHomepagePhotos = unstable_cache(
     });
     return resources.map((r) => r.public_id as string);
   },
-  ['cloudinary-homepage-photos'],
+  ['cloudinary-homepage-photos-v2'],
   { revalidate: 3600 }
 );
 
-// Returns a map of display_name → public_id for images in the thumbnails folder
+// Returns the public ID of the About-section portrait (first image in the Headshot folder)
+export const getHeadshot = unstable_cache(
+  async (): Promise<string | null> => {
+    if (!isCloudinaryConfigured()) return null;
+    const result = await cloudinary.api.resources_by_asset_folder(assetFolder('Headshot'), {
+      resource_type: 'image',
+      max_results: 1,
+    });
+    return (result.resources[0]?.public_id as string | undefined) ?? null;
+  },
+  ['cloudinary-headshot-v1'],
+  { revalidate: 3600 }
+);
+
+// Returns a map of display_name → public_id for images in the optional Thumbnails folder.
+// Videos without a match fall back to their YouTube thumbnail.
 export const getVideoThumbnails = unstable_cache(
   async (): Promise<Record<string, string>> => {
     if (!isCloudinaryConfigured()) return {};
-    const result = await cloudinary.api.resources_by_asset_folder('thumbnails', {
-      resource_type: 'image',
-      max_results: 100,
-    });
-    const map: Record<string, string> = {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const r of result.resources as any[]) {
-      const displayName = (r.display_name as string) || (r.public_id as string).split('/').pop() || '';
-      map[displayName] = r.public_id as string;
+    try {
+      const result = await cloudinary.api.resources_by_asset_folder(assetFolder('Thumbnails'), {
+        resource_type: 'image',
+        max_results: 100,
+      });
+      const map: Record<string, string> = {};
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      for (const r of result.resources as any[]) {
+        const displayName = (r.display_name as string) || (r.public_id as string).split('/').pop() || '';
+        map[displayName] = r.public_id as string;
+      }
+      return map;
+    } catch {
+      // Folder not created yet
+      return {};
     }
-    return map;
   },
-  ['cloudinary-video-thumbnails-v1'],
+  ['cloudinary-video-thumbnails-v2'],
   { revalidate: 3600 }
 );

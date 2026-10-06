@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import HomeClient from "./components/HomeClient";
-import { getHomepagePhotos } from "./lib/cloudinary";
+import { getHeadshot, getHomepagePhotos } from "./lib/cloudinary";
 
 export const revalidate = 3600;
 
@@ -20,6 +20,6 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const homepagePhotos = await getHomepagePhotos();
-  return <HomeClient homepagePhotos={homepagePhotos} />;
+  const [homepagePhotos, headshot] = await Promise.all([getHomepagePhotos(), getHeadshot()]);
+  return <HomeClient homepagePhotos={homepagePhotos} headshot={headshot} />;
 }

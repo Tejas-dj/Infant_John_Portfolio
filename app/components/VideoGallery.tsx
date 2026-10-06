@@ -6,6 +6,7 @@ import {
   useCallback,
 } from "react";
 import { AnimatePresence, motion, useMotionValue, useSpring } from "framer-motion";
+import { getCldImageUrl } from "next-cloudinary";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -18,7 +19,7 @@ interface Video {
   embedUrl: string;
   /** Optional Cloudinary autoplay URL for the featured section */
   cloudinaryUrl?: string;
-  /** Cloudinary public_id of the custom thumbnail (thumbnails folder) */
+  /** Display name of the custom thumbnail in the Cloudinary Thumbnails folder */
   cloudinaryThumb?: string;
   isFeatured?: boolean;
   orientation: "landscape" | "portrait";
@@ -28,15 +29,15 @@ interface Video {
 
 const VIDEOS: Video[] = [
   { id: 2,  title: "THE DREAM Ft. Maheen",         client: "@thatboujeefactor",    category: "Fashion & Influencer",  description: "A stylish fashion editorial capturing the essence of modern influencer aesthetics.", orientation: "landscape", isFeatured: true,  embedUrl: "https://www.youtube.com/embed/tpOrtLjocUY" },
-  { id: 3,  title: "AZŌRTE Store Launch",          client: "@_shashankdeshpande",  category: "Fashion & Influencer",  description: "High-energy event coverage capturing the vibrant atmosphere of the AZŌRTE store grand opening.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/4Ds-xRxNv5s",  cloudinaryThumb: "Azorte_ycq6a9" },
-  { id: 4,  title: "Courtyard Marriott Christmas", client: "Courtyard Marriott",   category: "Events",                description: "A festive and heartwarming look into the holiday celebrations at the Courtyard Marriott.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/zm10wlEa7yI",  cloudinaryThumb: "Courtyard_Marriott_Christmas_vchade" },
+  { id: 3,  title: "AZŌRTE Store Launch",          client: "@_shashankdeshpande",  category: "Fashion & Influencer",  description: "High-energy event coverage capturing the vibrant atmosphere of the AZŌRTE store grand opening.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/4Ds-xRxNv5s",  cloudinaryThumb: "Azorte" },
+  { id: 4,  title: "Courtyard Marriott Christmas", client: "Courtyard Marriott",   category: "Events",                description: "A festive and heartwarming look into the holiday celebrations at the Courtyard Marriott.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/zm10wlEa7yI",  cloudinaryThumb: "Courtyard_Marriott_Christmas" },
   { id: 6,  title: "MAX Fashion Store",            client: "@somethingname",       category: "Fashion & Influencer",  description: "Highlighting the latest apparel collections and engaging in-store experiences at MAX Fashion.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/zhqlZS3jnBY" },
-  { id: 7,  title: "Play Salon Visit",             client: "@playsaloon",          category: "Salon & Lifestyle",     description: "Capturing top-tier grooming and styling services in a modern, luxurious salon environment.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/1ctfzoaHXjw",  cloudinaryThumb: "Play_Salon_Visit_b8jpun" },
+  { id: 7,  title: "Play Salon Visit",             client: "@playsaloon",          category: "Salon & Lifestyle",     description: "Capturing top-tier grooming and styling services in a modern, luxurious salon environment.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/1ctfzoaHXjw",  cloudinaryThumb: "Play_Salon_Visit" },
   { id: 8,  title: "Style Union PR",               client: "@SUSHMITAREDDY",       category: "Fashion & Influencer",  description: "An exclusive PR package unboxing and fashion showcase featuring local influencers.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/Gxi2T5rQk5E" },
-  { id: 9,  title: "Puppawccino",                  client: "@puppawccino",         category: "Salon & Lifestyle",     description: "A playful, heartwarming look into premium pet grooming services and happy customers.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/av-kbls4wrs",  cloudinaryThumb: "Puppawccino_uv8uoi" },
-  { id: 10, title: "Rasa Jewellery",               client: "@rasajewellery",       category: "Jewellery",             description: "Highlighting the intricate details and stunning craftsmanship of the Rasa Jewellery collection.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/WBqvnOaVjo8",  cloudinaryThumb: "Rasa_Jewellery_myxfrl" },
+  { id: 9,  title: "Puppawccino",                  client: "@puppawccino",         category: "Salon & Lifestyle",     description: "A playful, heartwarming look into premium pet grooming services and happy customers.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/av-kbls4wrs",  cloudinaryThumb: "Puppawccino" },
+  { id: 10, title: "Rasa Jewellery",               client: "@rasajewellery",       category: "Jewellery",             description: "Highlighting the intricate details and stunning craftsmanship of the Rasa Jewellery collection.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/WBqvnOaVjo8",  cloudinaryThumb: "Rasa_Jewellery" },
   { id: 11, title: "Shein India",                  client: "@snehithaa_kushwaha",  category: "Fashion & Influencer",  description: "Trendy fashion transitions and outfit inspirations featuring the latest Shein styles.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/YikChcIoGl8" },
-  { id: 12, title: "Taayani Jewellers",            client: "@taayaanijewellery",   category: "Jewellery",             description: "Elegant and timeless jewelry pieces captured in a breathtaking visual showcase.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/MVLElgyX4GQ",  cloudinaryThumb: "Taayani_Jewellers_cbqdam" },
+  { id: 12, title: "Taayani Jewellers",            client: "@taayaanijewellery",   category: "Jewellery",             description: "Elegant and timeless jewelry pieces captured in a breathtaking visual showcase.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/MVLElgyX4GQ",  cloudinaryThumb: "Taayani_Jewellers" },
 ];
 
 const CATEGORIES = ["All", "Fashion & Influencer", "Events", "Salon & Lifestyle", "Jewellery"];
@@ -52,10 +53,10 @@ function ytThumb(embedUrl: string, hd = false): string {
 }
 
 function getThumb(video: Video, thumbMap: Record<string, string>, hd = false): string {
-  if (video.cloudinaryThumb) {
-    // Try the server-fetched real public_id first, fall back to the stored key
-    const publicId = thumbMap[video.cloudinaryThumb] ?? video.cloudinaryThumb;
-    return `https://res.cloudinary.com/dhahzowek/image/upload/f_auto,q_auto/${publicId}`;
+  // Custom thumbnail if one with this display name exists in Cloudinary, else YouTube's
+  const publicId = video.cloudinaryThumb ? thumbMap[video.cloudinaryThumb] : undefined;
+  if (publicId) {
+    return getCldImageUrl({ src: publicId, width: hd ? 1920 : 720, format: "auto", quality: "auto" });
   }
   return ytThumb(video.embedUrl, hd);
 }

@@ -520,7 +520,8 @@ export default function VideoGallery({
   const handleClose = useCallback(() => setOpenVideo(null), []);
 
   const { featured, shortFilms, reels, categories } = useMemo(() => {
-    const all = [...VIDEOS, ...bunnyVideos.map(fromBunny)];
+    // Newer Bunny uploads lead; the older YouTube embeds follow
+    const all = [...bunnyVideos.map(fromBunny), ...VIDEOS];
     const reels = all.filter((v) => !v.isFeatured && !v.isShortFilm);
     // Bunny collections that aren't one of the fixed tabs get a tab of their own
     const extra = reels.map((v) => v.category).filter((c) => c && !CATEGORIES.includes(c));

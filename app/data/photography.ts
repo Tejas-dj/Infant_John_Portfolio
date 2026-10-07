@@ -1,5 +1,4 @@
 export const CATEGORIES = [
-  'All',
   'Auto Mobile',
   'Family Events',
   'Food',

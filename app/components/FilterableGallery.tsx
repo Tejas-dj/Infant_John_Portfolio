@@ -55,11 +55,8 @@ function GalleryItem({ item, onClick }: { item: Photo; onClick: () => void }) {
 }
 
 export default function FilterableGallery({ photos }: { photos: Photo[] }) {
-  const [active, setActive] = useState("All");
+  const [selected, setSelected] = useState<string | null>(null);
   const [sel, setSel] = useState<number | null>(null);
-
-  const visible =
-    active === "All" ? photos : photos.filter((item) => item.category === active);
 
   const PRIORITY_ORDER = [
     "Wedding",
@@ -69,11 +66,15 @@ export default function FilterableGallery({ photos }: { photos: Photo[] }) {
     "Auto Mobile",
   ];
   const allCats = Array.from(new Set(photos.map((p) => p.category)));
-  const orderedCats = [
+  const displayCategories = [
     ...PRIORITY_ORDER.filter((c) => allCats.includes(c)),
     ...allCats.filter((c) => !PRIORITY_ORDER.includes(c)),
   ];
-  const displayCategories = ["All", ...orderedCats];
+
+  // No "All" view — the first category is shown until the visitor picks another
+  const active =
+    selected !== null && displayCategories.includes(selected) ? selected : displayCategories[0];
+  const visible = photos.filter((item) => item.category === active);
 
   return (
     <section className="py-20 w-full overflow-hidden">
@@ -84,7 +85,7 @@ export default function FilterableGallery({ photos }: { photos: Photo[] }) {
           {displayCategories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setActive(cat)}
+              onClick={() => setSelected(cat)}
               className={`font-body text-xs tracking-[0.12em] px-5 py-2.5 border transition-all duration-200 ${
                 active === cat
                   ? "border-gold text-gold bg-gold/5"

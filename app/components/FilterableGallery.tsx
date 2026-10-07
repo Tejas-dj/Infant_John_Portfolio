@@ -54,6 +54,60 @@ function GalleryItem({ item, onClick }: { item: Photo; onClick: () => void }) {
   );
 }
 
+function CategoryTile({
+  name,
+  cover,
+  active,
+  onClick,
+}: {
+  name: string;
+  cover: Photo;
+  active: boolean;
+  onClick: () => void;
+}) {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={name}
+      aria-pressed={active}
+      style={{ backgroundColor: cover.tint }}
+      className={`group relative aspect-[4/5] w-36 sm:w-44 lg:w-auto shrink-0 snap-start overflow-hidden border-2 cursor-pointer transition-colors duration-300 ${
+        active ? "border-gold" : "border-transparent hover:border-gold/45"
+      }`}
+    >
+      <CldImage
+        src={cover.src}
+        alt={`${name} cover photo`}
+        fill
+        sizes="(max-width: 640px) 144px, (max-width: 1024px) 176px, 14vw"
+        format="auto"
+        quality="auto"
+        crop="fill"
+        gravity="auto"
+        className={`object-cover will-change-transform transition-[opacity,transform] duration-700 ease-out group-hover:scale-105 ${
+          loaded ? "opacity-100" : "opacity-0"
+        }`}
+        onLoad={() => setLoaded(true)}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/20 to-transparent" />
+      <span className="absolute bottom-0 inset-x-0 p-3 md:p-4 text-left">
+        <span
+          aria-hidden="true"
+          className={`block h-0.5 w-8 mb-2 bg-gold origin-left will-change-transform transition-transform duration-300 ${
+            active ? "scale-x-100" : "scale-x-0"
+          }`}
+        />
+        <span className="block font-heading text-sm xl:text-base text-canvas tracking-[0.08em] leading-snug">
+          {name}
+        </span>
+      </span>
+    </button>
+  );
+}
+
 export default function FilterableGallery({ photos }: { photos: Photo[] }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [sel, setSel] = useState<number | null>(null);
@@ -76,24 +130,28 @@ export default function FilterableGallery({ photos }: { photos: Photo[] }) {
     selected !== null && displayCategories.includes(selected) ? selected : displayCategories[0];
   const visible = photos.filter((item) => item.category === active);
 
+  // Each tile is fronted by a photo from its own category — a portrait one where possible, to suit the tall tile
+  const tiles = displayCategories.flatMap((name) => {
+    const inCategory = photos.filter((p) => p.category === name);
+    const cover = inCategory.find((p) => p.orientation === "portrait") ?? inCategory[0];
+    return cover ? [{ name, cover }] : [];
+  });
+
   return (
     <section className="py-20 w-full overflow-hidden">
       <div className="mb-10 px-6 md:px-10">
         <h2 className="font-heading text-2xl text-charcoal font-bold mb-6">Browse by Category</h2>
 
-        <div className="flex flex-wrap gap-3">
-          {displayCategories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelected(cat)}
-              className={`font-body text-xs tracking-[0.12em] px-5 py-2.5 border transition-all duration-200 ${
-                active === cat
-                  ? "border-gold text-gold bg-gold/5"
-                  : "border-warm-gray/50 text-charcoal/55 hover:border-gold hover:text-gold"
-              }`}
-            >
-              {cat}
-            </button>
+        {/* Swipeable row on small screens, one even row on desktop */}
+        <div className="flex gap-3 overflow-x-auto snap-x scrollbar-none -mx-6 px-6 md:-mx-10 md:px-10 lg:mx-0 lg:px-0 lg:grid lg:grid-cols-7 lg:overflow-visible">
+          {tiles.map(({ name, cover }) => (
+            <CategoryTile
+              key={name}
+              name={name}
+              cover={cover}
+              active={active === name}
+              onClick={() => setSelected(name)}
+            />
           ))}
         </div>
       </div>

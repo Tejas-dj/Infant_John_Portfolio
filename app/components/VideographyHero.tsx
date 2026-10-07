@@ -25,13 +25,6 @@ export default function VideographyHero() {
   
   return (
     <section ref={containerRef} className="relative pt-32 pb-24 px-0 md:px-12 lg:px-16 xl:px-24 overflow-hidden min-h-[85vh] flex items-center bg-canvas">
-      
-      {/* Background ambient noise */}
-      <div 
-        className="pointer-events-none absolute inset-0 z-0 opacity-20 mix-blend-multiply"
-        style={{ backgroundImage: "url(/noise.png)", backgroundRepeat: "repeat" }}
-      />
-
       <div className="max-w-[1500px] mx-auto w-full relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
         
         {/* Left Column: Typography (Smaller column) */}
@@ -71,12 +64,12 @@ export default function VideographyHero() {
              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.9 }}
              className="mt-10"
           >
-            <button className="group flex items-center gap-4 text-charcoal hover:text-gold transition-colors duration-300">
+            <a href="#work" className="group inline-flex items-center gap-4 text-charcoal hover:text-gold transition-colors duration-300">
                <span className="font-body text-xs tracking-widest uppercase font-semibold">Explore The Work</span>
                <div className="w-8 h-[1px] bg-charcoal group-hover:bg-gold transition-colors duration-300 relative overflow-hidden">
                  <div className="absolute inset-0 bg-gold w-full origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
                </div>
-            </button>
+            </a>
           </motion.div>
         </motion.div>
 

@@ -7,6 +7,8 @@ export interface BunnyVideo {
   /** Name of the Bunny collection the video sits in — empty when it is in none */
   category: string;
   orientation: 'landscape' | 'portrait';
+  /** Runtime in seconds */
+  duration: number;
   embedUrl: string;
   thumbUrl: string;
 }
@@ -16,6 +18,7 @@ interface BunnyApiVideo {
   title: string;
   description: string | null;
   status: number;
+  length: number;
   width: number;
   height: number;
   collectionId: string | null;
@@ -95,11 +98,12 @@ const fetchBunnyVideos = unstable_cache(
         description: v.description ?? '',
         category: (v.collectionId && collectionNames.get(v.collectionId)) || '',
         orientation: v.height > v.width ? 'portrait' : 'landscape',
+        duration: Math.round(v.length),
         embedUrl: `${EMBED_BASE}/${libraryId}/${v.guid}`,
         thumbUrl: `https://${hostname}/${v.guid}/${v.thumbnailFileName || 'thumbnail.jpg'}`,
       }));
   },
-  ['bunny-stream-videos-v1'],
+  ['bunny-stream-videos-v2'],
   { revalidate: 3600 }
 );
 

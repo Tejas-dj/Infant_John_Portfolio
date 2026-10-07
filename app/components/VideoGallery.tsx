@@ -6,6 +6,7 @@ import {
   useCallback,
   useMemo,
 } from "react";
+import Image from "next/image";
 import { AnimatePresence, motion, useMotionValue, useSpring } from "framer-motion";
 import { getCldImageUrl } from "next-cloudinary";
 import type { BunnyVideo } from "../lib/bunny";
@@ -28,6 +29,10 @@ interface Video {
   /** Display name of the custom thumbnail in the Cloudinary Thumbnails folder */
   cloudinaryThumb?: string;
   isFeatured?: boolean;
+  /** Short films get their own section, apart from the featured films and the reels */
+  isShortFilm?: boolean;
+  /** Runtime in seconds (Bunny videos) */
+  duration?: number;
   orientation: "landscape" | "portrait";
 }
 
@@ -46,19 +51,32 @@ const VIDEOS: Video[] = [
 
 const CATEGORIES = ["All", "Fashion & Influencer", "Events", "Salon & Lifestyle", "Jewellery"];
 
-// Bunny Stream videos join the hardcoded list: landscape cuts sit with the
-// featured films, portrait cuts with the reels.
+// A Bunny video is a short film when it sits in a collection with this name,
+// or is one of the films pinned below (uploaded before any collection existed).
+const SHORT_FILMS_COLLECTION = "Short Films";
+const SHORT_FILM_GUIDS = new Set([
+  "7d4f6270-d315-4b3c-b446-0cb921b478b1", // Confession film
+  "d078edd5-3414-44f4-aea0-3d71b5ed1fdc", // HOSKOTE BIRIYANI
+]);
+
+// Bunny Stream videos join the hardcoded list: short films get their own
+// section, other landscape cuts sit with the featured films, portrait cuts
+// with the reels.
 function fromBunny(video: BunnyVideo): Video {
+  const isShortFilm =
+    video.category === SHORT_FILMS_COLLECTION || SHORT_FILM_GUIDS.has(video.guid);
   return {
     id: video.guid,
     title: video.title,
     client: "",
-    category: video.category,
+    category: isShortFilm ? "Short Film" : video.category,
     description: video.description,
     embedUrl: video.embedUrl,
     source: "bunny",
     thumbUrl: video.thumbUrl,
-    isFeatured: video.orientation === "landscape",
+    isShortFilm,
+    isFeatured: !isShortFilm && video.orientation === "landscape",
+    duration: video.duration,
     orientation: video.orientation,
   };
 }
@@ -90,6 +108,11 @@ function zeroPad(n: number): string {
   return String(n).padStart(2, "0");
 }
 
+// 118 → "1:58"
+function formatRuntime(seconds: number): string {
+  return `${Math.floor(seconds / 60)}:${zeroPad(seconds % 60)}`;
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function PlayIcon({ size = 18 }: { size?: number }) {
@@ -106,6 +129,32 @@ function CloseIcon() {
       <line x1="1" y1="1" x2="11" y2="11" />
       <line x1="11" y1="1" x2="1" y2="11" />
     </svg>
+  );
+}
+
+// Card still, lazy-loaded so off-screen cards cost nothing until scrolled to.
+// Served as-is: the Bunny CDN rejects requests that carry no Referer, which
+// rules out Next's server-side optimizer.
+function CardThumb({
+  src,
+  title,
+  zoom,
+  className,
+}: {
+  src: string;
+  title: string;
+  zoom: number;
+  className: string;
+}) {
+  return (
+    <div
+      className={`absolute inset-0 will-change-transform transition-transform duration-700 ease-out ${className}`}
+      style={{ transform: `scale(${zoom})` }}
+    >
+      {src && (
+        <Image src={src} alt={`Still from ${title}`} fill unoptimized className="object-cover" />
+      )}
+    </div>
   );
 }
 
@@ -147,13 +196,7 @@ function FeaturedCard({
       onKeyDown={(e) => e.key === "Enter" && onOpen(video)}
     >
       {/* Thumbnail */}
-      <div
-        className="absolute inset-0 bg-charcoal bg-cover bg-center will-change-transform transition-transform duration-700 ease-out"
-        style={{
-          backgroundImage: thumb ? `url(${thumb})` : undefined,
-          transform: hovered ? "scale(1.06)" : "scale(1)",
-        }}
-      />
+      <CardThumb src={thumb} title={video.title} zoom={hovered ? 1.06 : 1} className="bg-charcoal" />
 
       {/* Permanent cinematic gradient */}
       <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/10 to-transparent" />
@@ -209,6 +252,91 @@ function FeaturedCard({
   );
 }
 
+// ─── Short Film Card ──────────────────────────────────────────────────────────
+
+function ShortFilmCard({
+  video,
+  index,
+  thumbMap,
+  onOpen,
+  onCursorEnter,
+  onCursorLeave,
+}: {
+  video: Video;
+  index: number;
+  thumbMap: Record<string, string>;
+  onOpen: (v: Video) => void;
+  onCursorEnter: () => void;
+  onCursorLeave: () => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const thumb = getThumb(video, thumbMap, true);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.9, delay: index * 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="group flex flex-col cursor-none"
+      onMouseEnter={() => { setHovered(true); onCursorEnter(); }}
+      onMouseLeave={() => { setHovered(false); onCursorLeave(); }}
+      onClick={() => onOpen(video)}
+      role="button"
+      tabIndex={0}
+      aria-label={`Play ${video.title}`}
+      onKeyDown={(e) => e.key === "Enter" && onOpen(video)}
+    >
+      {/* Framed still */}
+      <div className="relative overflow-hidden border border-canvas/15 p-2 md:p-3">
+        <div className="relative overflow-hidden" style={{ aspectRatio: "4/3" }}>
+          <CardThumb src={thumb} title={video.title} zoom={hovered ? 1.05 : 1} className="bg-charcoal" />
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 via-transparent to-transparent" />
+
+          {/* Badge — top left */}
+          <div className="absolute top-4 left-4">
+            <span className="font-body text-[9px] tracking-[0.28em] uppercase text-gold border border-gold/60 bg-charcoal/75 backdrop-blur-md px-2.5 py-1">
+              Short Film
+            </span>
+          </div>
+
+          {/* Runtime — bottom right */}
+          {video.duration ? (
+            <div className="absolute bottom-4 right-4">
+              <span className="font-body text-[10px] tracking-[0.2em] text-canvas/80 bg-charcoal/50 backdrop-blur-md px-2.5 py-1">
+                {formatRuntime(video.duration)}
+              </span>
+            </div>
+          ) : null}
+        </div>
+
+        {/* Gold accent */}
+        <div
+          className="absolute bottom-0 left-0 h-[2px] w-full bg-gold origin-left will-change-transform transition-transform duration-500 ease-out"
+          style={{ transform: hovered ? "scaleX(1)" : "scaleX(0)" }}
+        />
+      </div>
+
+      {/* Title block */}
+      <div className="flex items-baseline gap-5 mt-6 px-1">
+        <span className="font-heading text-sm tracking-[0.3em] text-gold" aria-hidden>
+          {zeroPad(index + 1)}
+        </span>
+        <div>
+          <h3 className="font-heading text-xl md:text-2xl text-canvas font-bold leading-tight tracking-wide group-hover:text-gold transition-colors duration-300">
+            {video.title}
+          </h3>
+          {video.description && (
+            <p className="font-body text-sm text-canvas/55 leading-relaxed mt-2.5">
+              {video.description}
+            </p>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 // ─── Grid Card ────────────────────────────────────────────────────────────────
 
 function GridCard({
@@ -250,13 +378,7 @@ function GridCard({
         className="relative w-full overflow-hidden mb-5 shadow-sm group-hover:shadow-lg transition-shadow duration-500"
         style={{ aspectRatio: "9/16" }}
       >
-         <div
-           className="absolute inset-0 bg-beige bg-cover bg-center transition-transform duration-700 ease-out"
-           style={{ 
-             backgroundImage: thumb ? `url(${thumb})` : undefined,
-             transform: hovered ? "scale(1.05)" : "scale(1)" 
-           }}
-         />
+         <CardThumb src={thumb} title={video.title} zoom={hovered ? 1.05 : 1} className="bg-beige" />
          <div 
            className="absolute inset-0 transition-colors duration-300" 
            style={{ backgroundColor: hovered ? "rgba(44,44,44,0.15)" : "rgba(44,44,44,0.35)" }} 
@@ -397,13 +519,14 @@ export default function VideoGallery({
   const handleOpen = useCallback((v: Video) => setOpenVideo(v), []);
   const handleClose = useCallback(() => setOpenVideo(null), []);
 
-  const { featured, reels, categories } = useMemo(() => {
+  const { featured, shortFilms, reels, categories } = useMemo(() => {
     const all = [...VIDEOS, ...bunnyVideos.map(fromBunny)];
-    const reels = all.filter((v) => !v.isFeatured);
+    const reels = all.filter((v) => !v.isFeatured && !v.isShortFilm);
     // Bunny collections that aren't one of the fixed tabs get a tab of their own
     const extra = reels.map((v) => v.category).filter((c) => c && !CATEGORIES.includes(c));
     return {
       featured: all.filter((v) => v.isFeatured),
+      shortFilms: all.filter((v) => v.isShortFilm),
       reels,
       categories: [...CATEGORIES, ...new Set(extra)],
     };
@@ -432,8 +555,8 @@ export default function VideoGallery({
         </span>
       </motion.div>
 
-      {/* ── Section wrapper ── */}
-      <section className="py-20 md:py-28 px-6 max-w-7xl mx-auto">
+      {/* ── Featured films — #work is the hero's "Explore The Work" target ── */}
+      <section id="work" className="scroll-mt-6 py-20 md:py-28 px-6 max-w-7xl mx-auto">
 
         {/* ── Section label ── */}
         <motion.div
@@ -458,7 +581,7 @@ export default function VideoGallery({
         </motion.div>
 
         {/* ── Featured Films ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 w-full gap-3 md:gap-4 mb-20 md:mb-28">
+        <div className="grid grid-cols-1 md:grid-cols-2 w-full gap-3 md:gap-4">
           {featured.map((video, i) => (
             <FeaturedCard
               key={video.id}
@@ -473,8 +596,46 @@ export default function VideoGallery({
             />
           ))}
         </div>
+      </section>
 
-        {/* ── Reels section ── */}
+      {/* ── Short films — a charcoal band, set apart from the brand work ── */}
+      {shortFilms.length > 0 && (
+        <section className="bg-charcoal text-canvas py-20 md:py-28">
+          <div className="px-6 max-w-7xl mx-auto">
+            <div className="mb-12 md:mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+              <div>
+                <p className="font-body text-[10px] tracking-[0.38em] uppercase text-gold mb-3">
+                  Narrative
+                </p>
+                <h2 className="font-heading text-4xl md:text-5xl text-canvas font-bold leading-none">
+                  Short Films
+                </h2>
+              </div>
+              <div className="hidden md:block h-px flex-1 mx-12 bg-canvas/15 self-center" />
+              <p className="font-body text-xs text-canvas/50 tracking-widest max-w-xs leading-relaxed">
+                Longer, story-led pieces — made to be watched from start to finish.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-14">
+              {shortFilms.map((video, i) => (
+                <ShortFilmCard
+                  key={video.id}
+                  video={video}
+                  index={i}
+                  thumbMap={thumbnails}
+                  onOpen={handleOpen}
+                  onCursorEnter={() => setCursorActive(true)}
+                  onCursorLeave={() => setCursorActive(false)}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Reels section ── */}
+      <section className={`pb-20 md:pb-28 px-6 max-w-7xl mx-auto ${shortFilms.length > 0 ? "pt-20 md:pt-28" : ""}`}>
         <div className="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div>
             <p className="font-body text-[9px] tracking-[0.38em] uppercase text-charcoal/35 mb-2">

@@ -17,11 +17,7 @@ MAX Fashion Store | Influencer | @SOMETHINGNAME | Potrait | https://youtube.com/
 
 Play Salon Visit | Salon | @playsaloon  | Potrait | https://youtube.com/shorts/1ctfzoaHXjw?si=ZmR6-az2-KMSspSV
 
-Style Union PR | Fashion Influencer | @SUSHMITAREDDY | Potrait | https://youtube.com/shorts/Gxi2T5rQk5E?si=o6ixI0_EqF5uNURn
-
 Puppawccino | Pet Salon | @puppawccino      | Potrait | https://youtube.com/shorts/av-kbls4wrs?si=SV2kxLTaVEu0Ap6H
-
-Rasa Jewellery | Jewellery | @rasajewellery | Potrait | https://youtube.com/shorts/WBqvnOaVjo8?si=Va0JYVTzr3P21iTa
 
 Shein India | Fashion Influencer |  @snehithaa_kushwaha | Potrait | https://youtube.com/shorts/YikChcIoGl8?si=hh0brBlQlFNUyIoy
 

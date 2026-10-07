@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import VideoGallery from "../components/VideoGallery";
 import VideographyHero from "../components/VideographyHero";
+import { getBunnyVideos } from "../lib/bunny";
 import { getVideoThumbnails } from "../lib/cloudinary";
 
 export const metadata: Metadata = {
@@ -21,11 +22,11 @@ export const metadata: Metadata = {
 };
 
 export default async function VideographyPage() {
-  const thumbnails = await getVideoThumbnails();
+  const [thumbnails, bunnyVideos] = await Promise.all([getVideoThumbnails(), getBunnyVideos()]);
   return (
     <>
       <VideographyHero />
-      <VideoGallery thumbnails={thumbnails} />
+      <VideoGallery thumbnails={thumbnails} bunnyVideos={bunnyVideos} />
     </>
   );
 }

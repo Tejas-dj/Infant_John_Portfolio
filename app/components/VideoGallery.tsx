@@ -4,19 +4,25 @@ import {
   useState,
   useEffect,
   useCallback,
+  useMemo,
 } from "react";
 import { AnimatePresence, motion, useMotionValue, useSpring } from "framer-motion";
 import { getCldImageUrl } from "next-cloudinary";
+import type { BunnyVideo } from "../lib/bunny";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Video {
-  id: number;
+  id: number | string;
   title: string;
   client: string;
+  /** Empty for a Bunny video that is in no collection — it then shows under "All" only */
   category: string;
   description: string;
   embedUrl: string;
+  source: "youtube" | "bunny";
+  /** Ready-made thumbnail URL (Bunny videos) */
+  thumbUrl?: string;
   /** Optional Cloudinary autoplay URL for the featured section */
   cloudinaryUrl?: string;
   /** Display name of the custom thumbnail in the Cloudinary Thumbnails folder */
@@ -28,20 +34,34 @@ interface Video {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const VIDEOS: Video[] = [
-  { id: 2,  title: "THE DREAM Ft. Maheen",         client: "@thatboujeefactor",    category: "Fashion & Influencer",  description: "A stylish fashion editorial capturing the essence of modern influencer aesthetics.", orientation: "landscape", isFeatured: true,  embedUrl: "https://www.youtube.com/embed/tpOrtLjocUY" },
-  { id: 3,  title: "AZŌRTE Store Launch",          client: "@_shashankdeshpande",  category: "Fashion & Influencer",  description: "High-energy event coverage capturing the vibrant atmosphere of the AZŌRTE store grand opening.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/4Ds-xRxNv5s",  cloudinaryThumb: "Azorte" },
-  { id: 4,  title: "Courtyard Marriott Christmas", client: "Courtyard Marriott",   category: "Events",                description: "A festive and heartwarming look into the holiday celebrations at the Courtyard Marriott.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/zm10wlEa7yI",  cloudinaryThumb: "Courtyard_Marriott_Christmas" },
-  { id: 6,  title: "MAX Fashion Store",            client: "@somethingname",       category: "Fashion & Influencer",  description: "Highlighting the latest apparel collections and engaging in-store experiences at MAX Fashion.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/zhqlZS3jnBY" },
-  { id: 7,  title: "Play Salon Visit",             client: "@playsaloon",          category: "Salon & Lifestyle",     description: "Capturing top-tier grooming and styling services in a modern, luxurious salon environment.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/1ctfzoaHXjw",  cloudinaryThumb: "Play_Salon_Visit" },
-  { id: 9,  title: "Puppawccino",                  client: "@puppawccino",         category: "Salon & Lifestyle",     description: "A playful, heartwarming look into premium pet grooming services and happy customers.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/av-kbls4wrs",  cloudinaryThumb: "Puppawccino" },
-  { id: 11, title: "Shein India",                  client: "@snehithaa_kushwaha",  category: "Fashion & Influencer",  description: "Trendy fashion transitions and outfit inspirations featuring the latest Shein styles.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/YikChcIoGl8" },
-  { id: 12, title: "Taayani Jewellers",            client: "@taayaanijewellery",   category: "Jewellery",             description: "Elegant and timeless jewelry pieces captured in a breathtaking visual showcase.", orientation: "portrait",  embedUrl: "https://www.youtube.com/embed/MVLElgyX4GQ",  cloudinaryThumb: "Taayani_Jewellers" },
+  { id: 2,  title: "THE DREAM Ft. Maheen",         client: "@thatboujeefactor",    category: "Fashion & Influencer",  description: "A stylish fashion editorial capturing the essence of modern influencer aesthetics.", orientation: "landscape", isFeatured: true,  source: "youtube", embedUrl: "https://www.youtube.com/embed/tpOrtLjocUY" },
+  { id: 3,  title: "AZŌRTE Store Launch",          client: "@_shashankdeshpande",  category: "Fashion & Influencer",  description: "High-energy event coverage capturing the vibrant atmosphere of the AZŌRTE store grand opening.", orientation: "portrait",  source: "youtube", embedUrl: "https://www.youtube.com/embed/4Ds-xRxNv5s",  cloudinaryThumb: "Azorte" },
+  { id: 4,  title: "Courtyard Marriott Christmas", client: "Courtyard Marriott",   category: "Events",                description: "A festive and heartwarming look into the holiday celebrations at the Courtyard Marriott.", orientation: "portrait",  source: "youtube", embedUrl: "https://www.youtube.com/embed/zm10wlEa7yI",  cloudinaryThumb: "Courtyard_Marriott_Christmas" },
+  { id: 6,  title: "MAX Fashion Store",            client: "@somethingname",       category: "Fashion & Influencer",  description: "Highlighting the latest apparel collections and engaging in-store experiences at MAX Fashion.", orientation: "portrait",  source: "youtube", embedUrl: "https://www.youtube.com/embed/zhqlZS3jnBY" },
+  { id: 7,  title: "Play Salon Visit",             client: "@playsaloon",          category: "Salon & Lifestyle",     description: "Capturing top-tier grooming and styling services in a modern, luxurious salon environment.", orientation: "portrait",  source: "youtube", embedUrl: "https://www.youtube.com/embed/1ctfzoaHXjw",  cloudinaryThumb: "Play_Salon_Visit" },
+  { id: 9,  title: "Puppawccino",                  client: "@puppawccino",         category: "Salon & Lifestyle",     description: "A playful, heartwarming look into premium pet grooming services and happy customers.", orientation: "portrait",  source: "youtube", embedUrl: "https://www.youtube.com/embed/av-kbls4wrs",  cloudinaryThumb: "Puppawccino" },
+  { id: 11, title: "Shein India",                  client: "@snehithaa_kushwaha",  category: "Fashion & Influencer",  description: "Trendy fashion transitions and outfit inspirations featuring the latest Shein styles.", orientation: "portrait",  source: "youtube", embedUrl: "https://www.youtube.com/embed/YikChcIoGl8" },
+  { id: 12, title: "Taayani Jewellers",            client: "@taayaanijewellery",   category: "Jewellery",             description: "Elegant and timeless jewelry pieces captured in a breathtaking visual showcase.", orientation: "portrait",  source: "youtube", embedUrl: "https://www.youtube.com/embed/MVLElgyX4GQ",  cloudinaryThumb: "Taayani_Jewellers" },
 ];
 
 const CATEGORIES = ["All", "Fashion & Influencer", "Events", "Salon & Lifestyle", "Jewellery"];
 
-const FEATURED = VIDEOS.filter((v) => v.isFeatured);
-const REELS    = VIDEOS.filter((v) => !v.isFeatured);
+// Bunny Stream videos join the hardcoded list: landscape cuts sit with the
+// featured films, portrait cuts with the reels.
+function fromBunny(video: BunnyVideo): Video {
+  return {
+    id: video.guid,
+    title: video.title,
+    client: "",
+    category: video.category,
+    description: video.description,
+    embedUrl: video.embedUrl,
+    source: "bunny",
+    thumbUrl: video.thumbUrl,
+    isFeatured: video.orientation === "landscape",
+    orientation: video.orientation,
+  };
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -51,12 +71,19 @@ function ytThumb(embedUrl: string, hd = false): string {
 }
 
 function getThumb(video: Video, thumbMap: Record<string, string>, hd = false): string {
+  if (video.thumbUrl) return video.thumbUrl;
   // Custom thumbnail if one with this display name exists in Cloudinary, else YouTube's
   const publicId = video.cloudinaryThumb ? thumbMap[video.cloudinaryThumb] : undefined;
   if (publicId) {
     return getCldImageUrl({ src: publicId, width: hd ? 1920 : 720, format: "auto", quality: "auto" });
   }
   return ytThumb(video.embedUrl, hd);
+}
+
+function playerSrc(video: Video): string {
+  return video.source === "bunny"
+    ? `${video.embedUrl}?autoplay=true&preload=true&responsive=true`
+    : `${video.embedUrl}?autoplay=1&rel=0&modestbranding=1`;
 }
 
 function zeroPad(n: number): string {
@@ -87,6 +114,7 @@ function CloseIcon() {
 function FeaturedCard({
   video,
   index,
+  className = "",
   thumbMap,
   onOpen,
   onCursorEnter,
@@ -94,6 +122,7 @@ function FeaturedCard({
 }: {
   video: Video;
   index: number;
+  className?: string;
   thumbMap: Record<string, string>;
   onOpen: (v: Video) => void;
   onCursorEnter: () => void;
@@ -107,7 +136,7 @@ function FeaturedCard({
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.9, delay: index * 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="relative overflow-hidden cursor-none group"
+      className={`relative overflow-hidden cursor-none group ${className}`}
       style={{ aspectRatio: "16/10" }}
       onMouseEnter={() => { setHovered(true); onCursorEnter(); }}
       onMouseLeave={() => { setHovered(false); onCursorLeave(); }}
@@ -147,11 +176,13 @@ function FeaturedCard({
       </div>
 
       {/* Category badge — top left */}
-      <div className="absolute top-5 left-5 z-10">
-        <span className="font-body text-[9px] tracking-[0.22em] uppercase text-canvas/60 bg-black/30 backdrop-blur-md px-2.5 py-1 border border-white/10">
-          {video.category}
-        </span>
-      </div>
+      {video.category && (
+        <div className="absolute top-5 left-5 z-10">
+          <span className="font-body text-[9px] tracking-[0.22em] uppercase text-canvas/60 bg-black/30 backdrop-blur-md px-2.5 py-1 border border-white/10">
+            {video.category}
+          </span>
+        </div>
+      )}
 
       {/* Title block */}
       <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
@@ -232,11 +263,13 @@ function GridCard({
          />
          
          {/* Category Badge */}
-         <div className="absolute top-4 left-4">
-           <span className="font-body text-[8px] tracking-[0.2em] uppercase text-canvas/80 bg-black/40 backdrop-blur-md px-2.5 py-1.5 border border-white/10">
-             {video.category}
-           </span>
-         </div>
+         {video.category && (
+           <div className="absolute top-4 left-4">
+             <span className="font-body text-[8px] tracking-[0.2em] uppercase text-canvas/80 bg-black/40 backdrop-blur-md px-2.5 py-1.5 border border-white/10">
+               {video.category}
+             </span>
+           </div>
+         )}
       </div>
 
       {/* Text Details */}
@@ -244,12 +277,16 @@ function GridCard({
         <h3 className="font-heading text-lg md:text-xl text-charcoal font-bold leading-tight group-hover:text-gold transition-colors duration-300">
           {video.title}
         </h3>
-        <p className="font-body text-[10px] tracking-[0.2em] uppercase text-charcoal/40 mt-1.5 mb-2.5">
-          {video.client}
-        </p>
-        <p className="font-body text-sm text-charcoal/60 leading-relaxed">
-          {video.description}
-        </p>
+        {video.client && (
+          <p className="font-body text-[10px] tracking-[0.2em] uppercase text-charcoal/40 mt-1.5 mb-2.5">
+            {video.client}
+          </p>
+        )}
+        {video.description && (
+          <p className="font-body text-sm text-charcoal/60 leading-relaxed">
+            {video.description}
+          </p>
+        )}
       </div>
     </motion.div>
   );
@@ -307,7 +344,7 @@ function VideoModal({ video, onClose }: { video: Video; onClose: () => void }) {
         {video.orientation === "portrait" ? (
           <div className="relative h-full max-h-full aspect-[9/16] overflow-hidden shadow-2xl">
             <iframe
-              src={`${video.embedUrl}?autoplay=1&rel=0&modestbranding=1`}
+              src={playerSrc(video)}
               className="absolute inset-0 w-full h-full"
               allow="autoplay; fullscreen; picture-in-picture"
               allowFullScreen
@@ -317,7 +354,7 @@ function VideoModal({ video, onClose }: { video: Video; onClose: () => void }) {
         ) : (
           <div className="relative w-full aspect-video overflow-hidden shadow-2xl">
             <iframe
-              src={`${video.embedUrl}?autoplay=1&rel=0&modestbranding=1`}
+              src={playerSrc(video)}
               className="absolute inset-0 w-full h-full"
               allow="autoplay; fullscreen; picture-in-picture"
               allowFullScreen
@@ -332,7 +369,13 @@ function VideoModal({ video, onClose }: { video: Video; onClose: () => void }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function VideoGallery({ thumbnails = {} }: { thumbnails?: Record<string, string> }) {
+export default function VideoGallery({
+  thumbnails = {},
+  bunnyVideos = [],
+}: {
+  thumbnails?: Record<string, string>;
+  bunnyVideos?: BunnyVideo[];
+}) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [openVideo, setOpenVideo]           = useState<Video | null>(null);
   const [cursorActive, setCursorActive]     = useState(false);
@@ -354,10 +397,22 @@ export default function VideoGallery({ thumbnails = {} }: { thumbnails?: Record<
   const handleOpen = useCallback((v: Video) => setOpenVideo(v), []);
   const handleClose = useCallback(() => setOpenVideo(null), []);
 
+  const { featured, reels, categories } = useMemo(() => {
+    const all = [...VIDEOS, ...bunnyVideos.map(fromBunny)];
+    const reels = all.filter((v) => !v.isFeatured);
+    // Bunny collections that aren't one of the fixed tabs get a tab of their own
+    const extra = reels.map((v) => v.category).filter((c) => c && !CATEGORIES.includes(c));
+    return {
+      featured: all.filter((v) => v.isFeatured),
+      reels,
+      categories: [...CATEGORIES, ...new Set(extra)],
+    };
+  }, [bunnyVideos]);
+
   const visibleReels =
     activeCategory === "All"
-      ? REELS
-      : REELS.filter((v) => v.category === activeCategory);
+      ? reels
+      : reels.filter((v) => v.category === activeCategory);
 
   return (
     <>
@@ -403,12 +458,14 @@ export default function VideoGallery({ thumbnails = {} }: { thumbnails?: Record<
         </motion.div>
 
         {/* ── Featured Films ── */}
-        <div className="grid grid-cols-1 w-full gap-3 md:gap-4 mb-20 md:mb-28">
-          {FEATURED.map((video, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 w-full gap-3 md:gap-4 mb-20 md:mb-28">
+          {featured.map((video, i) => (
             <FeaturedCard
               key={video.id}
               video={video}
               index={i}
+              // The lead film runs full width whenever that leaves the rest in even rows
+              className={i === 0 && featured.length % 2 === 1 ? "md:col-span-2" : ""}
               thumbMap={thumbnails}
               onOpen={handleOpen}
               onCursorEnter={() => setCursorActive(true)}
@@ -430,7 +487,7 @@ export default function VideoGallery({ thumbnails = {} }: { thumbnails?: Record<
 
           {/* Filter tabs */}
           <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((cat) => {
+            {categories.map((cat) => {
               const isActive = cat === activeCategory;
               return (
                 <button

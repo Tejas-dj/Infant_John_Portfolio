@@ -24,7 +24,8 @@ function assetFolder(name: string): string {
   return `${ROOT_FOLDER}/${name}`;
 }
 
-// Photography category folders — the folder name is also the display label
+// Photography category folders — the folder name is also the display label,
+// unless overridden in CATEGORY_LABELS
 const CATEGORY_FOLDERS = [
   'Auto Mobile',
   'Family Events',
@@ -35,6 +36,11 @@ const CATEGORY_FOLDERS = [
   'Wedding',
 ];
 
+// Folders whose title on the site differs from their Cloudinary folder name
+const CATEGORY_LABELS: Record<string, string> = {
+  Product: 'Jewellery',
+};
+
 function getOrientation(width: number, height: number): Photo['orientation'] {
   const ratio = width / height;
   if (ratio > 1.2) return 'landscape';
@@ -42,11 +48,12 @@ function getOrientation(width: number, height: number): Photo['orientation'] {
   return 'square';
 }
 
-async function fetchFolder(category: string): Promise<Omit<Photo, 'id'>[]> {
-  const result = await cloudinary.api.resources_by_asset_folder(assetFolder(category), {
+async function fetchFolder(folder: string): Promise<Omit<Photo, 'id'>[]> {
+  const result = await cloudinary.api.resources_by_asset_folder(assetFolder(folder), {
     resource_type: 'image',
     max_results: 500,
   });
+  const category = CATEGORY_LABELS[folder] ?? folder;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return result.resources.map((r: any, i: number) => ({
@@ -84,7 +91,7 @@ export const getAllPhotos = unstable_cache(
     }
     return merged.map((photo, i) => ({ ...photo, id: i + 1 }));
   },
-  ['cloudinary-all-photos-v4'],
+  ['cloudinary-all-photos-v5'],
   { revalidate: 3600 }
 );
 

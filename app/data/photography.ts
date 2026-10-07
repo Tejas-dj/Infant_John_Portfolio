@@ -4,7 +4,7 @@ export const CATEGORIES = [
   'Family Events',
   'Food',
   'Potraits',
-  'Product',
+  'Jewellery',
   'Pub and Nightlife',
   'Wedding',
 ];

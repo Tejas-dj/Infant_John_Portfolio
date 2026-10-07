@@ -1,8 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { CldImage, getCldImageUrl } from "next-cloudinary";
-import { useState, useEffect } from "react";
+import { CldImage, getCldImageUrl, type CldImageProps } from "next-cloudinary";
+import { useState } from "react";
 
 export type LightboxImage = {
   src: string;
@@ -43,23 +43,18 @@ function getThumbUrl(src: string) {
   return getCldImageUrl({ src, width: 60, quality: 10, format: "auto" });
 }
 
-// Full-res URL used for preloading
-function getFullUrl(src: string) {
-  return getCldImageUrl({ src, width: 1200, quality: "auto", format: "auto" });
-}
+// Every prop that influences the requested Cloudinary URL (srcset candidates + transformation).
+// The visible photo and the hidden neighbour preloads both spread this, so the browser picks
+// the exact same srcset candidate for both and the preload is a guaranteed cache hit.
+const FULL_IMAGE_PROPS = {
+  fill: true,
+  sizes: "(max-width: 768px) 88vw, 1100px",
+  format: "auto",
+  quality: "auto",
+} satisfies Partial<CldImageProps>;
 
 export default function Lightbox({ images, sel, setSel }: LightboxProps) {
   const [loaded, setLoaded] = useState<Record<number, boolean>>({});
-
-  // Preload adjacent images so prev/next feels instant
-  useEffect(() => {
-    if (sel === null || images.length === 0) return;
-    const count = images.length;
-    [(sel + 1) % count, (sel - 1 + count) % count].forEach(idx => {
-      const img = new window.Image();
-      img.src = getFullUrl(images[idx].src);
-    });
-  }, [sel, images]);
 
   if (!images || images.length === 0) return null;
 
@@ -68,6 +63,13 @@ export default function Lightbox({ images, sel, setSel }: LightboxProps) {
   const next = () => setSel(sel !== null ? (sel + 1) % count : null);
 
   const currentImage = sel !== null ? images[sel] : null;
+
+  // Neighbours to preload. Set dedupes the 2-photo case (prev === next); the filter drops
+  // the selected photo itself (1-photo case), so no duplicates and no self-preload.
+  const preloadIdx =
+    sel !== null
+      ? Array.from(new Set([(sel + 1) % count, (sel - 1 + count) % count])).filter((i) => i !== sel)
+      : [];
   const panelSize = currentImage ? getPanelSize(currentImage) : { w: 600, h: 600 };
 
   return (
@@ -137,15 +139,13 @@ export default function Lightbox({ images, sel, setSel }: LightboxProps) {
             <CldImage
               src={currentImage.src}
               alt={currentImage.filename || "Photography"}
-              fill
-              sizes="(max-width: 768px) 88vw, 1200px"
-              format="auto"
-              quality="auto"
+              {...FULL_IMAGE_PROPS}
               className={`absolute inset-0 object-contain transition-opacity duration-500 ease-in-out ${
                 loaded[sel] ? "opacity-100" : "opacity-0"
               }`}
               onLoad={() => setLoaded((prev) => ({ ...prev, [sel]: true }))}
-              priority
+              loading="eager"
+              fetchPriority="high"
             />
           </motion.div>
 
@@ -158,6 +158,24 @@ export default function Lightbox({ images, sel, setSel }: LightboxProps) {
           >
             ›
           </button>
+
+          {/* Hidden neighbour preloads — same CldImage props as the visible photo, so the browser
+              requests the identical srcset URL. 1px (not display:none) so the fetch is reliable. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute left-0 top-0 h-px w-px overflow-hidden opacity-0"
+          >
+            {preloadIdx.map((idx) => (
+              <CldImage
+                key={idx}
+                src={images[idx].src}
+                alt=""
+                {...FULL_IMAGE_PROPS}
+                loading="eager"
+                fetchPriority="low"
+              />
+            ))}
+          </div>
 
           {/* Counter */}
           <p className="absolute bottom-6 inset-x-0 text-center font-body text-xs text-canvas/30 tracking-widest">

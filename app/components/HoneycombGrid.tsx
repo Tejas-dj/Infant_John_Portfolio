@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import { gsap } from "gsap";
 import { CldImage } from "next-cloudinary";
 import Lightbox from "./Lightbox";
@@ -14,6 +14,11 @@ function computeLayout(vw: number) {
   const gap  = Math.max(4, Math.round(sx * 0.134));      // ~13% of step as gap
   const size = Math.round(sx - gap);
   return { size, gap, cols };
+}
+
+// Hero is `h-screen min-h-[700px]`; the grid wrapper fills it (absolute inset-0)
+function computeConfig() {
+  return { ...computeLayout(window.innerWidth), heroH: Math.max(window.innerHeight, 700) };
 }
 
 function hexLayout(size: number, gap: number, count: number, cols: number) {
@@ -49,11 +54,22 @@ export default function HoneycombGrid({ photos }: { photos: Photo[] }) {
     size: 90, gap: 14, cols: 15,
   });
 
-  const [cfg, setCfg] = useState({ size: 90, gap: 14, cols: 15 });
+  const [cfg, setCfg] = useState({ size: 90, gap: 14, cols: 15, heroH: 700 });
   const [mounted, setMounted] = useState(false);
   const [sel, setSel] = useState<number | null>(null);
 
-  const L = hexLayout(cfg.size, cfg.gap, count, cfg.cols);
+  const L = useMemo(
+    () => hexLayout(cfg.size, cfg.gap, count, cfg.cols),
+    [cfg.size, cfg.gap, cfg.cols, count],
+  );
+
+  // Circles inside the hero's visible band (± one row step). The grid is not
+  // pannable, so anything outside the band is clipped and never needs an image.
+  const visible = useMemo(() => {
+    const sy = (cfg.size + cfg.gap) * 0.8660254;
+    const py = (cfg.heroH - L.H) / 2;
+    return L.pos.map(p => p.y + py + cfg.size + sy > 0 && p.y + py - sy < cfg.heroH);
+  }, [L, cfg.size, cfg.gap, cfg.heroH]);
 
   // ── DOM helpers ──────────────────────────────────────────────
   function applyTransform() {
@@ -102,7 +118,7 @@ export default function HoneycombGrid({ photos }: { photos: Photo[] }) {
 
   // ── Mount ────────────────────────────────────────────────────
   useEffect(() => {
-    const layout = computeLayout(window.innerWidth);
+    const layout = computeConfig();
     lv.current.size = layout.size;
     lv.current.gap  = layout.gap;
     lv.current.cols = layout.cols;
@@ -139,7 +155,7 @@ export default function HoneycombGrid({ photos }: { photos: Photo[] }) {
     };
 
     const onResize = () => {
-      const layout = computeLayout(window.innerWidth);
+      const layout = computeConfig();
       lv.current.z    = 1;
       lv.current.size = layout.size;
       lv.current.gap  = layout.gap;
@@ -227,19 +243,21 @@ export default function HoneycombGrid({ photos }: { photos: Photo[] }) {
                 boxShadow: "0 4px 18px rgba(44,44,44,0.1), inset 0 0 0 1.5px rgba(217,176,97,0.18)",
               }}
             >
-              <CldImage
-                src={photo.src}
-                alt={`Photo ${i + 1}`}
-                fill
-                sizes="(max-width: 600px) 90px, (max-width: 1024px) 120px, 180px"
-                format="auto"
-                quality={50}
-                crop="fill"
-                gravity="auto"
-                loading={i < 45 ? "eager" : "lazy"}
-                className="object-cover opacity-0 transition-opacity duration-500"
-                onLoad={(e) => (e.currentTarget as HTMLImageElement).classList.remove("opacity-0")}
-              />
+              {visible[i] && (
+                <CldImage
+                  src={photo.src}
+                  alt={`Photo ${i + 1}`}
+                  fill
+                  sizes="(max-width: 600px) 64px, 128px"
+                  format="auto"
+                  quality={50}
+                  crop="fill"
+                  gravity="auto"
+                  loading="eager"
+                  className="object-cover opacity-0 transition-opacity duration-500"
+                  onLoad={(e) => (e.currentTarget as HTMLImageElement).classList.remove("opacity-0")}
+                />
+              )}
             </div>
           ))}
         </div>

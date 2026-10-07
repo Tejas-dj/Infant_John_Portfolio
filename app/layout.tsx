@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
+import ReactDOM from "react-dom";
 import { Cinzel, Inter } from "next/font/google";
 import "./globals.css";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import ScrollProgress from "./components/ScrollProgress";
 import NoiseOverlay from "./components/NoiseOverlay";
-import LightboxPreloader from "./components/LightboxPreloader";
 
 const cinzel = Cinzel({
   variable: "--font-cinzel",
@@ -44,6 +44,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Open the Cloudinary connection (DNS + TLS) before the first image is requested.
+  ReactDOM.preconnect("https://res.cloudinary.com");
+
   return (
     <html lang="en" className={`${cinzel.variable} ${inter.variable}`}>
       <body className="min-h-screen flex flex-col bg-canvas text-charcoal">
@@ -54,7 +57,6 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
-        <LightboxPreloader />
       </body>
     </html>
   );

@@ -17,7 +17,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ## 1. Project Overview
 
 **Client:** Infant John A — Freelance Videographer & Photographer, India  
-**Site URL:** https://infantjohna.com  
+**Site URL:** https://infant-john-portfolio.vercel.app  
 **Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS · Framer Motion · GSAP  
 **Spec document:** `../Let there be light.MD` — read it for full design intent and feature scope  
 **Asset manifest:** `assets.md` — read it before referencing any image or video path  
@@ -132,7 +132,7 @@ All colours are defined as Tailwind custom tokens. **Never hardcode hex values i
 ## 6. SEO Configuration
 
 ### Global metadata (`app/layout.tsx`)
-- `metadataBase`: `https://infantjohna.com`
+- `metadataBase`: `https://infant-john-portfolio.vercel.app`
 - Default title: `"Infant John A — Videographer & Photographer"`
 - Title template: `"%s — Infant John A"`
 - Open Graph image: `/og-image.jpg` (1200×630)

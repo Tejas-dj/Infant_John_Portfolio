@@ -4,7 +4,7 @@
 
 A cinematic, immersive personal portfolio for **Infant John A** — freelance videographer and photographer based in India. Built to feel less like a website and more like a short film: luxurious, emotionally intelligent, and delightful to explore.
 
-🌐 **Live site:** [infantjohna.com](https://infantjohna.com)
+🌐 **Live site:** [infant-john-portfolio.vercel.app](https://infant-john-portfolio.vercel.app)
 
 ---
 
@@ -45,7 +45,7 @@ A cinematic, immersive personal portfolio for **Infant John A** — freelance vi
 ## 🗺️ Site Map
 
 ```
-https://infantjohna.com
+https://infant-john-portfolio.vercel.app
 │
 ├── /                     → Home
 │   ├── Hero (name + tagline + gold CTAs)
@@ -229,7 +229,7 @@ Located at [`public/robots.txt`](./public/robots.txt).
 Located at [`public/sitemap.xml`](./public/sitemap.xml).
 
 - Lists all 5 routes with correct priority, `lastmod`, and `changefreq` values
-- **Submit to Google Search Console** after first deployment: `https://infantjohna.com/sitemap.xml`
+- **Submit to Google Search Console** after first deployment: `https://infant-john-portfolio.vercel.app/sitemap.xml`
 
 ### Per-Page Metadata
 
@@ -241,7 +241,7 @@ Every page exports its own `metadata` object (title, description, Open Graph, Tw
 
 ### Privacy Policy
 
-A full privacy policy is live at [`/privacy-policy`](https://infantjohna.com/privacy-policy), covering:
+A full privacy policy is live at [`/privacy-policy`](https://infant-john-portfolio.vercel.app/privacy-policy), covering:
 - No direct data collection (no forms, no accounts)
 - Passive server/hosting logs (Vercel infrastructure)
 - Third-party embeds (YouTube, Vimeo, Google Fonts, Instagram, Behance)

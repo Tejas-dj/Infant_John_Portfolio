@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 const EFFECTIVE_DATE = "28 May 2026";
 const CONTACT_EMAIL = "Infantjohn2005@gmail.com";
-const SITE_URL = "https://infantjohna.com";
+const SITE_URL = "https://infant-john-portfolio.vercel.app";
 
 const Section = ({
   id,

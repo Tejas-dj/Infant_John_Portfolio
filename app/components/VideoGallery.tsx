@@ -59,6 +59,22 @@ const SHORT_FILM_GUIDS = new Set([
   "d078edd5-3414-44f4-aea0-3d71b5ed1fdc", // HOSKOTE BIRIYANI
 ]);
 
+// Reels pinned to the front of the grid, in this order. Everything else
+// follows in its usual order.
+const REEL_ORDER = [
+  "7e32ba74-9fd0-4883-a3fb-0790a9b7cf42", // BANANA CLUB
+  "731e193e-2d3a-4c01-b2cf-1b335a8f6d8e", // MALL OF ASIA X ZOYE
+  "45b86c4d-5683-4550-a650-b618e5e1c5b0", // ZOYA X EASY BUY
+  "63db5903-c727-4589-b48a-78ed165ea95f", // GODS PLAN
+  "5f2dff56-1d2b-48d6-aa95-dd5e34f45176", // SICKO MODE
+  "d68694c9-57bb-400f-a041-d1390f75b6ce", // BURNING BRIDGES
+];
+
+function reelRank(video: Video): number {
+  const i = REEL_ORDER.indexOf(String(video.id));
+  return i === -1 ? REEL_ORDER.length : i;
+}
+
 // Bunny Stream videos join the hardcoded list: short films get their own
 // section, other landscape cuts sit with the featured films, portrait cuts
 // with the reels.
@@ -522,7 +538,9 @@ export default function VideoGallery({
   const { featured, shortFilms, reels, categories } = useMemo(() => {
     // Newer Bunny uploads lead; the older YouTube embeds follow
     const all = [...bunnyVideos.map(fromBunny), ...VIDEOS];
-    const reels = all.filter((v) => !v.isFeatured && !v.isShortFilm);
+    const reels = all
+      .filter((v) => !v.isFeatured && !v.isShortFilm)
+      .sort((a, b) => reelRank(a) - reelRank(b));
     // Bunny collections that aren't one of the fixed tabs get a tab of their own
     const extra = reels.map((v) => v.category).filter((c) => c && !CATEGORIES.includes(c));
     return {
